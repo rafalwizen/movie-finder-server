@@ -21,6 +21,7 @@ public class FilmDownloadService {
 	private final MovieSaveRepository movieSaveRepository;
 	private final RestTemplate restTemplate;
 
+
 	@Transactional
 	public void downloadAndSaveFilms() {
 		log.info("Rozpoczynam pobieranie filmów z Cinema City API");
@@ -49,13 +50,16 @@ public class FilmDownloadService {
 							continue;
 						}
 
-						MovieSave movieSave = MovieSave.builder()
+						Long newId = movieSaveRepository.findMaxId() + 1;
+
+						MovieSave movie = MovieSave.builder()
+								.id(newId)
 								.originalId(filmDto.getFilmId())
 								.title(filmDto.getFilmName())
 								.build();
 
-						movieSaveRepository.save(movieSave);
-						log.debug("Dodano film: {} (ID: {})", movieSave.getTitle(), movieSave.getOriginalId());
+						movieSaveRepository.save(movie);
+						log.debug("Dodano film: {} (ID: {}, originalId: {})", movie.getTitle(), movie.getId(), movie.getOriginalId());
 						totalAdded++;
 					}
 				} else {
