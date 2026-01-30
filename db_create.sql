@@ -1,5 +1,6 @@
 CREATE TABLE movies (
   id BIGINT PRIMARY KEY,
+  originalId VARCHAR(255),
   title VARCHAR(255),
   original_title VARCHAR(255),
   year INT,
