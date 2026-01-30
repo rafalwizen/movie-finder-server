@@ -29,4 +29,12 @@ public class MovieController {
 				.map(m -> new MovieDTO(m.getId(), m.getTitle(), m.getYear(), m.getPosterUrl()))
 				.collect(Collectors.toList());
 	}
+
+	@GetMapping("/allMovies")
+	public List<MovieDTO> getAllMovies() {
+		List<Movie> movies = movieRepository.findAll();
+		return movies.stream()
+				.map(m -> new MovieDTO(m.getId(), m.getTitle(), m.getYear(), m.getPosterUrl()))
+				.collect(Collectors.toList());
+	}
 }

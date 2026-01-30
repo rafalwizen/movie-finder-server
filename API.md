@@ -87,6 +87,44 @@ GET /api/screenings/search?title=Avengers: Endgame
 
 ---
 
+### 3. All Movies
+
+**Endpoint:** `GET /api/allMovies`
+
+**Description:** Returns a list of all movies in the database, regardless of whether they have active screenings or not.
+
+**Example Requests:**
+```bash
+GET /api/allMovies
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "title": "Avengers: Endgame",
+    "year": 2019,
+    "posterUrl": "https://example.com/poster1.jpg"
+  },
+  {
+    "id": 2,
+    "title": "Spider-Man: No Way Home",
+    "year": 2021,
+    "posterUrl": "https://example.com/poster2.jpg"
+  },
+  {
+    "id": 3,
+    "title": "Batman Begins",
+    "year": 2005,
+    "posterUrl": "https://example.com/poster3.jpg"
+  }
+]
+
+```
+
+---
+
 ## Data Models
 
 ### MovieDTO
