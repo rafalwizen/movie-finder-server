@@ -1,8 +1,8 @@
-package com.wizen.rafal.moviefinderserver.controller;
+package com.wizen.rafal.moviefinderserver.search.controller;
 
-import com.wizen.rafal.moviefinderserver.dto.MovieDTO;
-import com.wizen.rafal.moviefinderserver.model.Movie;
-import com.wizen.rafal.moviefinderserver.repository.MovieRepository;
+import com.wizen.rafal.moviefinderserver.search.dto.MovieDTO;
+import com.wizen.rafal.moviefinderserver.search.model.Movie;
+import com.wizen.rafal.moviefinderserver.search.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.dto;
+package com.wizen.rafal.moviefinderserver.search.dto;
 
 import lombok.Data;
 
