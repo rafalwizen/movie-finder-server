@@ -1,0 +1,6 @@
+
+
+cinema-city:
+  api:
+    base-url: https://www.cinema-city.pl/pl/data-api-service/v1/10103/trailers/byCinemaId
+    cinema-ids: 1092
