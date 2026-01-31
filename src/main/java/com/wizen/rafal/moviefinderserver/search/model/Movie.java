@@ -11,8 +11,6 @@ public class Movie {
 	@Id
 	private Long id;
 
-	private String originalId;
-
 	private String title;
 
 	@Column(name = "original_title")

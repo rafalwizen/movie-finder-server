@@ -19,9 +19,6 @@ public class MovieSave {
 	@Id
 	private Long id;
 
-	@Column(name = "originalId")
-	private String originalId;
-
 	@Column(name = "title")
 	private String title;
 

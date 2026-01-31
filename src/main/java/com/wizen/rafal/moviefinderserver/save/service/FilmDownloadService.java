@@ -2,8 +2,12 @@ package com.wizen.rafal.moviefinderserver.save.service;
 
 import com.wizen.rafal.moviefinderserver.save.config.CinemaCityProperties;
 import com.wizen.rafal.moviefinderserver.save.dto.CinemaCityResponse;
+import com.wizen.rafal.moviefinderserver.save.model.CinemaProvider;
 import com.wizen.rafal.moviefinderserver.save.model.MovieSave;
+import com.wizen.rafal.moviefinderserver.save.model.MovieSource;
+import com.wizen.rafal.moviefinderserver.save.repository.CinemaProviderRepository;
 import com.wizen.rafal.moviefinderserver.save.repository.MovieSaveRepository;
+import com.wizen.rafal.moviefinderserver.save.repository.MovieSourceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,20 +15,27 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmDownloadService {
 
-	private final CinemaCityProperties cinemaCityProperties;
-	private final MovieSaveRepository movieSaveRepository;
-	private final RestTemplate restTemplate;
+	private static final String CINEMA_CITY_PROVIDER_CODE = "CINEMA_CITY";
 
+	private final CinemaCityProperties cinemaCityProperties;
+	private final MovieSaveRepository movieRepository;
+	private final MovieSourceRepository movieSourceRepository;
+	private final CinemaProviderRepository cinemaProviderRepository;
+	private final RestTemplate restTemplate;
 
 	@Transactional
 	public void downloadAndSaveFilms() {
 		log.info("Rozpoczynam pobieranie filmów z Cinema City API");
+
+		// Pobierz lub utwórz providera Cinema City
+		CinemaProvider cinemaCityProvider = getOrCreateCinemaCityProvider();
 
 		int totalProcessed = 0;
 		int totalAdded = 0;
@@ -44,22 +55,35 @@ public class FilmDownloadService {
 					for (CinemaCityResponse.FilmDto filmDto : films) {
 						totalProcessed++;
 
-						if (movieSaveRepository.existsByOriginalId(filmDto.getFilmId())) {
-							log.debug("Film {} już istnieje w bazie, pomijam", filmDto.getFilmId());
+						// Sprawdź czy film z tym external_movie_id już istnieje dla tego providera
+						if (movieSourceRepository.existsByProviderIdAndExternalMovieId(
+								cinemaCityProvider.getId(), filmDto.getFilmId())) {
+							log.debug("Film z external ID {} już istnieje dla providera {}, pomijam",
+									filmDto.getFilmId(), CINEMA_CITY_PROVIDER_CODE);
 							totalSkipped++;
 							continue;
 						}
 
-						Long newId = movieSaveRepository.findMaxId() + 1;
-
+						// Utwórz nowy film domenowy
+						Long newMovieId = movieRepository.findMaxId() + 1;
 						MovieSave movie = MovieSave.builder()
-								.id(newId)
-								.originalId(filmDto.getFilmId())
+								.id(newMovieId)
 								.title(filmDto.getFilmName())
 								.build();
+						movieRepository.save(movie);
 
-						movieSaveRepository.save(movie);
-						log.debug("Dodano film: {} (ID: {}, originalId: {})", movie.getTitle(), movie.getId(), movie.getOriginalId());
+						// Utwórz powiązanie filmu z provideram (movie_source)
+						Long newSourceId = movieSourceRepository.findMaxId() + 1;
+						MovieSource movieSource = MovieSource.builder()
+								.id(newSourceId)
+								.movieId(movie.getId())
+								.providerId(cinemaCityProvider.getId())
+								.externalMovieId(filmDto.getFilmId())
+								.build();
+						movieSourceRepository.save(movieSource);
+
+						log.debug("Dodano film: {} (Movie ID: {}, External ID: {}, Provider: {})",
+								movie.getTitle(), movie.getId(), filmDto.getFilmId(), CINEMA_CITY_PROVIDER_CODE);
 						totalAdded++;
 					}
 				} else {
@@ -75,7 +99,33 @@ public class FilmDownloadService {
 				totalProcessed, totalAdded, totalSkipped);
 	}
 
+	private CinemaProvider getOrCreateCinemaCityProvider() {
+		Optional<CinemaProvider> existingProvider = cinemaProviderRepository.findByCode(CINEMA_CITY_PROVIDER_CODE);
+
+		if (existingProvider.isPresent()) {
+			log.debug("Provider {} już istnieje w bazie", CINEMA_CITY_PROVIDER_CODE);
+			return existingProvider.get();
+		}
+
+		// Jeśli provider nie istnieje, utwórz go
+		Long newProviderId = cinemaProviderRepository.findAll().stream()
+				.map(CinemaProvider::getId)
+				.max(Long::compareTo)
+				.orElse(0L) + 1;
+
+		CinemaProvider newProvider = CinemaProvider.builder()
+				.id(newProviderId)
+				.code(CINEMA_CITY_PROVIDER_CODE)
+				.name("Cinema City")
+				.build();
+
+		cinemaProviderRepository.save(newProvider);
+		log.info("Utworzono nowego providera: {} (ID: {})", newProvider.getName(), newProvider.getId());
+
+		return newProvider;
+	}
+
 	public List<MovieSave> getAllMovies() {
-		return movieSaveRepository.findAll();
+		return movieRepository.findAll();
 	}
 }
