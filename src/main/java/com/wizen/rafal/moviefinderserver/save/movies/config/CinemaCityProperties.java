@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.save.config;
+package com.wizen.rafal.moviefinderserver.save.movies.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -1,14 +1,14 @@
-package com.wizen.rafal.moviefinderserver.save.service;
+package com.wizen.rafal.moviefinderserver.save.movies.service;
 
-import com.wizen.rafal.moviefinderserver.save.config.CinemaCityProperties;
-import com.wizen.rafal.moviefinderserver.save.dto.CinemaCityResponse;
-import com.wizen.rafal.moviefinderserver.save.dto.FilmDetailsResponse;
-import com.wizen.rafal.moviefinderserver.save.model.CinemaProvider;
-import com.wizen.rafal.moviefinderserver.save.model.MovieSave;
-import com.wizen.rafal.moviefinderserver.save.model.MovieSource;
-import com.wizen.rafal.moviefinderserver.save.repository.CinemaProviderRepository;
-import com.wizen.rafal.moviefinderserver.save.repository.MovieSaveRepository;
-import com.wizen.rafal.moviefinderserver.save.repository.MovieSourceRepository;
+import com.wizen.rafal.moviefinderserver.save.movies.config.CinemaCityProperties;
+import com.wizen.rafal.moviefinderserver.save.movies.dto.CinemaCityResponse;
+import com.wizen.rafal.moviefinderserver.save.movies.dto.FilmDetailsResponse;
+import com.wizen.rafal.moviefinderserver.save.movies.model.CinemaProvider;
+import com.wizen.rafal.moviefinderserver.save.movies.model.MovieSave;
+import com.wizen.rafal.moviefinderserver.save.movies.model.MovieSource;
+import com.wizen.rafal.moviefinderserver.save.movies.repository.CinemaProviderRepository;
+import com.wizen.rafal.moviefinderserver.save.movies.repository.MovieSaveRepository;
+import com.wizen.rafal.moviefinderserver.save.movies.repository.MovieSourceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

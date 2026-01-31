@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.save.config;
+package com.wizen.rafal.moviefinderserver.save.movies.config;
 
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;

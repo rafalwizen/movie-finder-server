@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.save.dto;
+package com.wizen.rafal.moviefinderserver.save.movies.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

@@ -1,6 +1,6 @@
-package com.wizen.rafal.moviefinderserver.save.runner;
+package com.wizen.rafal.moviefinderserver.save.movies.runner;
 
-import com.wizen.rafal.moviefinderserver.save.service.FilmDownloadService;
+import com.wizen.rafal.moviefinderserver.save.movies.service.FilmDownloadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
