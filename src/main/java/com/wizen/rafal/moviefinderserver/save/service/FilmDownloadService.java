@@ -2,6 +2,7 @@ package com.wizen.rafal.moviefinderserver.save.service;
 
 import com.wizen.rafal.moviefinderserver.save.config.CinemaCityProperties;
 import com.wizen.rafal.moviefinderserver.save.dto.CinemaCityResponse;
+import com.wizen.rafal.moviefinderserver.save.dto.FilmDetailsResponse;
 import com.wizen.rafal.moviefinderserver.save.model.CinemaProvider;
 import com.wizen.rafal.moviefinderserver.save.model.MovieSave;
 import com.wizen.rafal.moviefinderserver.save.model.MovieSource;
@@ -40,6 +41,7 @@ public class FilmDownloadService {
 		int totalProcessed = 0;
 		int totalAdded = 0;
 		int totalSkipped = 0;
+		int totalUpdated = 0;
 
 		for (String cinemaId : cinemaCityProperties.getCinemaIds()) {
 			log.info("Pobieram filmy dla kina o ID: {}", cinemaId);
@@ -56,19 +58,51 @@ public class FilmDownloadService {
 						totalProcessed++;
 
 						// Sprawdź czy film z tym external_movie_id już istnieje dla tego providera
-						if (movieSourceRepository.existsByProviderIdAndExternalMovieId(
-								cinemaCityProvider.getId(), filmDto.getFilmId())) {
-							log.debug("Film z external ID {} już istnieje dla providera {}, pomijam",
-									filmDto.getFilmId(), CINEMA_CITY_PROVIDER_CODE);
+						Optional<MovieSource> existingMovieSource = movieSourceRepository
+								.findByProviderIdAndExternalMovieId(cinemaCityProvider.getId(), filmDto.getFilmId());
+
+						if (existingMovieSource.isPresent()) {
+							// Film już istnieje - sprawdź czy ma plakat
+							Long existingMovieId = existingMovieSource.get().getMovieId();
+							Optional<MovieSave> existingMovie = movieRepository.findById(existingMovieId);
+
+							if (existingMovie.isPresent()) {
+								MovieSave movie = existingMovie.get();
+
+								if (movie.getPosterUrl() == null || movie.getPosterUrl().isEmpty()) {
+									// Film nie ma plakatu - pobierz i uzupełnij
+									log.debug("Film {} (ID: {}) nie ma plakatu, uzupełniam...",
+											movie.getTitle(), movie.getId());
+
+									String posterUrl = fetchPosterUrl(filmDto.getFilmId());
+									if (posterUrl != null) {
+										movie.setPosterUrl(posterUrl);
+										movieRepository.save(movie);
+										log.info("Uzupełniono plakat dla filmu: {} (ID: {})",
+												movie.getTitle(), movie.getId());
+										totalUpdated++;
+									} else {
+										log.debug("Nie udało się pobrać plakatu dla filmu {}", movie.getTitle());
+									}
+								} else {
+									log.debug("Film {} (ID: {}) już ma plakat, pomijam",
+											movie.getTitle(), movie.getId());
+								}
+							}
+
 							totalSkipped++;
 							continue;
 						}
+
+						// Film nie istnieje - pobierz plakat i utwórz nowy film
+						String posterUrl = fetchPosterUrl(filmDto.getFilmId());
 
 						// Utwórz nowy film domenowy
 						Long newMovieId = movieRepository.findMaxId() + 1;
 						MovieSave movie = MovieSave.builder()
 								.id(newMovieId)
 								.title(filmDto.getFilmName())
+								.posterUrl(posterUrl)
 								.build();
 						movieRepository.save(movie);
 
@@ -82,8 +116,9 @@ public class FilmDownloadService {
 								.build();
 						movieSourceRepository.save(movieSource);
 
-						log.debug("Dodano film: {} (Movie ID: {}, External ID: {}, Provider: {})",
-								movie.getTitle(), movie.getId(), filmDto.getFilmId(), CINEMA_CITY_PROVIDER_CODE);
+						log.debug("Dodano film: {} (Movie ID: {}, External ID: {}, Provider: {}, Poster: {})",
+								movie.getTitle(), movie.getId(), filmDto.getFilmId(),
+								CINEMA_CITY_PROVIDER_CODE, posterUrl != null ? "TAK" : "BRAK");
 						totalAdded++;
 					}
 				} else {
@@ -95,8 +130,35 @@ public class FilmDownloadService {
 			}
 		}
 
-		log.info("Zakończono pobieranie filmów. Przetworzono: {}, Dodano: {}, Pominięto (duplikaty): {}",
-				totalProcessed, totalAdded, totalSkipped);
+		log.info("Zakończono pobieranie filmów. Przetworzono: {}, Dodano: {}, Pominięto: {}, Zaktualizowano plakatów: {}",
+				totalProcessed, totalAdded, totalSkipped, totalUpdated);
+	}
+
+	private String fetchPosterUrl(String externalMovieId) {
+		try {
+			String url = cinemaCityProperties.getFilmDetailsUrl() + "/" + externalMovieId;
+			log.debug("Pobieram szczegóły filmu z URL: {}", url);
+
+			FilmDetailsResponse response = restTemplate.getForObject(url, FilmDetailsResponse.class);
+
+			if (response != null && response.getBody() != null
+					&& response.getBody().getFilmDetails() != null) {
+				String posterLink = response.getBody().getFilmDetails().getPosterLink();
+
+				if (posterLink != null && !posterLink.isEmpty()) {
+					log.debug("Znaleziono plakat dla filmu {}: {}", externalMovieId, posterLink);
+					return posterLink;
+				} else {
+					log.debug("Brak plakatu dla filmu {}", externalMovieId);
+				}
+			} else {
+				log.warn("Nieprawidłowa odpowiedź przy pobieraniu szczegółów filmu {}", externalMovieId);
+			}
+		} catch (Exception e) {
+			log.error("Błąd podczas pobierania plakatu dla filmu {}: {}", externalMovieId, e.getMessage());
+		}
+
+		return null;
 	}
 
 	private CinemaProvider getOrCreateCinemaCityProvider() {

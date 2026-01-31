@@ -12,6 +12,7 @@ import java.util.List;
 public class CinemaCityProperties {
 
 	private String baseUrl;
+	private String filmDetailsUrl;
 	private List<String> cinemaIds;
 
 }
