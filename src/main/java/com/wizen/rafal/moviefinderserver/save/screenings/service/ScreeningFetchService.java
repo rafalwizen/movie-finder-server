@@ -1,5 +1,6 @@
 package com.wizen.rafal.moviefinderserver.save.screenings.service;
 
+import com.wizen.rafal.moviefinderserver.save.screenings.config.ScreeningFetchProperties;
 import com.wizen.rafal.moviefinderserver.save.screenings.dto.CinemaCityResponse;
 import com.wizen.rafal.moviefinderserver.save.screenings.model.CinemaScreening;
 import com.wizen.rafal.moviefinderserver.save.screenings.model.MovieSourceScreening;
@@ -9,7 +10,6 @@ import com.wizen.rafal.moviefinderserver.save.screenings.repository.MovieSourceS
 import com.wizen.rafal.moviefinderserver.save.screenings.repository.ScreeningScreeningRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,9 +28,7 @@ public class ScreeningFetchService {
 	private final ScreeningScreeningRepository screeningRepository;
 	private final CinemaScreeningRepository cinemaRepository;
 	private final CinemaCityApiService cinemaCityApiService;
-
-	@Value("${screening-fetch.days-ahead:0}")
-	private int daysAhead;
+	private final ScreeningFetchProperties properties;
 
 	private static final Long CINEMA_CITY_PROVIDER_ID = 1L;
 	private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -77,6 +75,8 @@ public class ScreeningFetchService {
 	private List<LocalDate> prepareDatesList() {
 		List<LocalDate> dates = new ArrayList<>();
 		LocalDate today = LocalDate.now();
+
+		int daysAhead = properties.getDaysAhead();
 
 		for (int i = 0; i <= daysAhead; i++) {
 			dates.add(today.plusDays(i));

@@ -1,0 +1,5 @@
+screening-fetch:
+  days-ahead: 1  # Liczba dni od dzisiaj (0 = tylko dzisiaj, 3 = dzisiaj + 3 kolejne dni)
+  cleanup:
+    enabled: true  # Czy włączyć automatyczne czyszczenie starych seansów
+    days-to-keep: 0  # Usuń seanse starsze niż X dni (null = nie usuwaj)
