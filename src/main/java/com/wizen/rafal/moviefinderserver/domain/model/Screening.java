@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.search.model;
+package com.wizen.rafal.moviefinderserver.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
