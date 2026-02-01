@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,8 +29,8 @@ public class ScreeningFetchService {
 	private final CinemaScreeningRepository cinemaRepository;
 	private final CinemaCityApiService cinemaCityApiService;
 
-	@Value("${screening-fetch.date:#{T(java.time.LocalDate).now()}}")
-	private LocalDate fetchDate;
+	@Value("${screening-fetch.days-ahead:0}")
+	private int daysAhead;
 
 	private static final Long CINEMA_CITY_PROVIDER_ID = 1L;
 	private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -37,24 +38,28 @@ public class ScreeningFetchService {
 
 	@Transactional
 	public void fetchAllScreenings() {
-		log.info("Starting to fetch screenings for date: {}", fetchDate);
+		List<LocalDate> datesToFetch = prepareDatesList();
+
+		log.info("Starting to fetch screenings for {} days: {}", datesToFetch.size(), datesToFetch);
 
 		List<MovieSourceScreening> movieSources = movieSourceRepository.findByProviderId(CINEMA_CITY_PROVIDER_ID);
 		log.info("Found {} movies for Cinema City provider", movieSources.size());
 
 		int totalProcessed = 0;
 		int totalScreeningsSaved = 0;
+		int totalScreeningsSkipped = 0;
 
 		for (MovieSourceScreening movieSource : movieSources) {
 			try {
-				int screeningsSaved = processMovieSource(movieSource);
-				totalScreeningsSaved += screeningsSaved;
+				ScreeningStats stats = processMovieSourceForAllDates(movieSource, datesToFetch);
+				totalScreeningsSaved += stats.saved;
+				totalScreeningsSkipped += stats.skipped;
 				totalProcessed++;
 
-				log.info("Processed movie {}/{}: {} ({}), saved {} screenings",
+				log.info("Processed movie {}/{}: {} ({}), saved {} screenings, skipped {} duplicates",
 						totalProcessed, movieSources.size(),
 						movieSource.getExternalMovieId(), movieSource.getMovieId(),
-						screeningsSaved);
+						stats.saved, stats.skipped);
 
 				// Delay to avoid API rate limiting
 				Thread.sleep(500);
@@ -65,39 +70,90 @@ public class ScreeningFetchService {
 			}
 		}
 
-		log.info("Finished fetching screenings. Processed {} movies, saved {} screenings",
-				totalProcessed, totalScreeningsSaved);
+		log.info("Finished fetching screenings. Processed {} movies, saved {} new screenings, skipped {} duplicates",
+				totalProcessed, totalScreeningsSaved, totalScreeningsSkipped);
 	}
 
-	private int processMovieSource(MovieSourceScreening movieSource) {
+	private List<LocalDate> prepareDatesList() {
+		List<LocalDate> dates = new ArrayList<>();
+		LocalDate today = LocalDate.now();
+
+		for (int i = 0; i <= daysAhead; i++) {
+			dates.add(today.plusDays(i));
+		}
+
+		return dates;
+	}
+
+	private ScreeningStats processMovieSourceForAllDates(MovieSourceScreening movieSource, List<LocalDate> dates) {
+		ScreeningStats totalStats = new ScreeningStats();
+
+		for (LocalDate date : dates) {
+			try {
+				ScreeningStats stats = processMovieSourceForDate(movieSource, date);
+				totalStats.saved += stats.saved;
+				totalStats.skipped += stats.skipped;
+
+				// Small delay between date requests for the same movie
+				Thread.sleep(200);
+			} catch (Exception e) {
+				log.error("Error processing movie {} for date {}: {}",
+						movieSource.getExternalMovieId(), date, e.getMessage());
+			}
+		}
+
+		return totalStats;
+	}
+
+	private ScreeningStats processMovieSourceForDate(MovieSourceScreening movieSource, LocalDate date) {
 		CinemaCityResponse response = cinemaCityApiService.fetchScreenings(
 				movieSource.getExternalMovieId(),
-				fetchDate
+				date
 		);
 
+		ScreeningStats stats = new ScreeningStats();
+
 		if (response == null || response.getBody() == null || response.getBody().getEvents() == null) {
-			log.debug("No screenings found for movie {}", movieSource.getExternalMovieId());
-			return 0;
+			log.debug("No screenings found for movie {} on date {}",
+					movieSource.getExternalMovieId(), date);
+			return stats;
 		}
 
 		List<CinemaCityResponse.Event> events = response.getBody().getEvents();
-		int savedCount = 0;
 
 		for (CinemaCityResponse.Event event : events) {
 			try {
-				saveScreening(movieSource, event);
-				savedCount++;
+				boolean saved = saveScreeningIfNotExists(movieSource, event);
+				if (saved) {
+					stats.saved++;
+				} else {
+					stats.skipped++;
+				}
 			} catch (Exception e) {
 				log.error("Error saving screening for movie {}, cinema {}: {}",
 						movieSource.getExternalMovieId(), event.getCinemaId(), e.getMessage());
 			}
 		}
 
-		return savedCount;
+		return stats;
 	}
 
-	private void saveScreening(MovieSourceScreening movieSource, CinemaCityResponse.Event event) {
+	private boolean saveScreeningIfNotExists(MovieSourceScreening movieSource, CinemaCityResponse.Event event) {
 		Long cinemaId = parseCinemaId(event.getCinemaId());
+		LocalDateTime screeningDateTime = parseDateTime(event.getEventDateTime());
+
+		// Check if screening already exists
+		boolean exists = screeningRepository.existsByMovieIdAndCinemaIdAndScreeningDatetime(
+				movieSource.getMovieId(),
+				cinemaId,
+				screeningDateTime
+		);
+
+		if (exists) {
+			log.debug("Screening already exists for movie {}, cinema {}, datetime {}",
+					movieSource.getMovieId(), cinemaId, screeningDateTime);
+			return false;
+		}
 
 		// Verify cinema exists
 		CinemaScreening cinema = cinemaRepository.findByIdAndProviderId(cinemaId, CINEMA_CITY_PROVIDER_ID)
@@ -106,11 +162,12 @@ public class ScreeningFetchService {
 		ScreeningScreening screening = new ScreeningScreening();
 		screening.setMovieId(movieSource.getMovieId());
 		screening.setCinemaId(cinemaId);
-		screening.setScreeningDatetime(parseDateTime(event.getEventDateTime()));
+		screening.setScreeningDatetime(screeningDateTime);
 		screening.setScreeningUrl(event.getBookingLink());
 		screening.setCreatedAt(LocalDateTime.now());
 
 		screeningRepository.save(screening);
+		return true;
 	}
 
 	private Long parseCinemaId(String cinemaIdStr) {
@@ -128,5 +185,10 @@ public class ScreeningFetchService {
 			log.error("Error parsing date time: {}", dateTimeStr);
 			throw new RuntimeException("Invalid date time format: " + dateTimeStr);
 		}
+	}
+
+	private static class ScreeningStats {
+		int saved = 0;
+		int skipped = 0;
 	}
 }

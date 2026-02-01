@@ -6,7 +6,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "screenings")
+@Table(name = "screenings",
+		uniqueConstraints = @UniqueConstraint(
+				columnNames = {"movie_id", "cinema_id", "screening_datetime"}
+		))
 @Data
 public class ScreeningScreening {
 
