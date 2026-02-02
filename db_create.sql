@@ -19,14 +19,18 @@ CREATE TABLE movies
 
 CREATE TABLE cinemas
 (
-    id          BIGINT PRIMARY KEY,
-    provider_id BIGINT NOT NULL,
-    name        VARCHAR(255),
-    city        VARCHAR(255),
-    address     VARCHAR(255),
-    website_url TEXT,
-    created_at  TIMESTAMP,
-    FOREIGN KEY (provider_id) REFERENCES cinema_providers (id)
+    id                 BIGINT PRIMARY KEY,
+    provider_id        BIGINT       NOT NULL,
+    external_cinema_id VARCHAR(255) NOT NULL,
+    name               VARCHAR(255),
+    city               VARCHAR(255),
+    address            VARCHAR(255),
+    website_url        TEXT,
+    latitude           REAL,
+    longitude          REAL,
+    created_at         TIMESTAMP,
+    FOREIGN KEY (provider_id) REFERENCES cinema_providers (id),
+    UNIQUE (provider_id, external_cinema_id)
 );
 
 CREATE TABLE movie_sources
