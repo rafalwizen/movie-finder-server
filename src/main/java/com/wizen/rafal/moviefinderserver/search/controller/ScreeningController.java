@@ -22,9 +22,9 @@ public class ScreeningController {
 		return screenings.stream()
 				.map(s -> new ScreeningDTO(
 						s.getScreeningDatetime(),
-						"s.getCinema().getName()",
-						"s.getCinema().getCity()",
-						"s.getCinema().getAddress()",
+						s.getCinema().getName(),
+						s.getCinema().getCity(),
+						s.getCinema().getAddress(),
 						s.getScreeningUrl()
 				))
 				.collect(Collectors.toList());
