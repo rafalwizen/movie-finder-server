@@ -8,7 +8,10 @@ import java.time.LocalDateTime;
 @Table(name = "screenings")
 @Data
 public class Screening {
+
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", columnDefinition = "INTEGER")
 	private Long id;
 
 	@ManyToOne
@@ -16,7 +19,7 @@ public class Screening {
 	private Movie movie;
 
 	@ManyToOne
-	@JoinColumn(name = "cinema_id")
+	@JoinColumn(name = "cinema_id", columnDefinition = "INTEGER")
 	private Cinema cinema;
 
 	@Column(name = "screening_datetime")

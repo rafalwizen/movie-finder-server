@@ -2,7 +2,7 @@ package com.wizen.rafal.moviefinderserver.search.controller;
 
 import com.wizen.rafal.moviefinderserver.search.dto.MovieDTO;
 import com.wizen.rafal.moviefinderserver.domain.model.Movie;
-import com.wizen.rafal.moviefinderserver.search.repository.MovieRepository;
+import com.wizen.rafal.moviefinderserver.domain.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;

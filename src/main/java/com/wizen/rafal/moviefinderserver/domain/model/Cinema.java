@@ -14,7 +14,7 @@ public class Cinema {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
+	@Column(name = "id", columnDefinition = "INTEGER")
 	private Long id;
 
 	@Column(name = "provider_id", nullable = false)

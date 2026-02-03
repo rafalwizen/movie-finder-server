@@ -1,13 +1,15 @@
 package com.wizen.rafal.moviefinderserver.save.screenings.service;
 
+import com.wizen.rafal.moviefinderserver.domain.model.Cinema;
+import com.wizen.rafal.moviefinderserver.domain.model.Movie;
+import com.wizen.rafal.moviefinderserver.domain.model.Screening;
+import com.wizen.rafal.moviefinderserver.domain.repository.CinemaRepository;
+import com.wizen.rafal.moviefinderserver.domain.repository.MovieRepository;
 import com.wizen.rafal.moviefinderserver.save.screenings.config.ScreeningFetchProperties;
 import com.wizen.rafal.moviefinderserver.save.screenings.dto.CinemaCityResponse;
-import com.wizen.rafal.moviefinderserver.save.screenings.model.CinemaScreening;
 import com.wizen.rafal.moviefinderserver.save.screenings.model.MovieSourceScreening;
-import com.wizen.rafal.moviefinderserver.save.screenings.model.ScreeningScreening;
-import com.wizen.rafal.moviefinderserver.save.screenings.repository.CinemaScreeningRepository;
 import com.wizen.rafal.moviefinderserver.save.screenings.repository.MovieSourceScreeningRepository;
-import com.wizen.rafal.moviefinderserver.save.screenings.repository.ScreeningScreeningRepository;
+import com.wizen.rafal.moviefinderserver.search.repository.ScreeningRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,9 @@ import java.util.List;
 public class ScreeningFetchService {
 
 	private final MovieSourceScreeningRepository movieSourceRepository;
-	private final ScreeningScreeningRepository screeningRepository;
-	private final CinemaScreeningRepository cinemaRepository;
+	private final MovieRepository movieRepository;
+	private final ScreeningRepository screeningRepository;
+	private final CinemaRepository cinemaRepository;
 	private final CinemaCityApiService cinemaCityApiService;
 	private final ScreeningFetchProperties properties;
 
@@ -155,13 +158,15 @@ public class ScreeningFetchService {
 			return false;
 		}
 
-		// Verify cinema exists
-		CinemaScreening cinema = cinemaRepository.findByIdAndProviderId(cinemaId, CINEMA_CITY_PROVIDER_ID)
+		Cinema cinema = cinemaRepository.findByProviderIdAndExternalCinemaId(CINEMA_CITY_PROVIDER_ID, cinemaId.toString())
 				.orElseThrow(() -> new RuntimeException("Cinema not found: " + cinemaId));
 
-		ScreeningScreening screening = new ScreeningScreening();
-		screening.setMovieId(movieSource.getMovieId());
-		screening.setCinemaId(cinemaId);
+		Movie movie = movieRepository.findById(movieSource.getMovieId())
+				.orElseThrow(() -> new RuntimeException("Movie not found: " + movieSource.getMovieId()));
+
+		Screening screening = new Screening();
+		screening.setMovie(movie);
+		screening.setCinema(cinema);
 		screening.setScreeningDatetime(screeningDateTime);
 		screening.setScreeningUrl(event.getBookingLink());
 		screening.setCreatedAt(LocalDateTime.now());

@@ -1,7 +1,7 @@
 package com.wizen.rafal.moviefinderserver.save.screenings.service;
 
 import com.wizen.rafal.moviefinderserver.save.screenings.config.ScreeningFetchProperties;
-import com.wizen.rafal.moviefinderserver.save.screenings.repository.ScreeningScreeningRepository;
+import com.wizen.rafal.moviefinderserver.search.repository.ScreeningRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Slf4j
 public class ScreeningCleanupService {
 
-	private final ScreeningScreeningRepository screeningRepository;
+	private final ScreeningRepository screeningRepository;
 	private final ScreeningFetchProperties properties;
 
 	@Transactional

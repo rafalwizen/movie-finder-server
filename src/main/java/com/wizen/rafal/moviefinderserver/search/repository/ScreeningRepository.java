@@ -2,9 +2,12 @@ package com.wizen.rafal.moviefinderserver.search.repository;
 
 import com.wizen.rafal.moviefinderserver.domain.model.Screening;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -16,4 +19,14 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
 			"WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :title, '%')) " +
 			"ORDER BY s.screeningDatetime")
 	List<Screening> findScreeningsByMovieTitle(@Param("title") String title);
+
+	@Modifying
+	@Query("DELETE FROM Screening s WHERE s.screeningDatetime < :cutoffDateTime")
+	int deleteByScreeningDatetimeBefore(@Param("cutoffDateTime") LocalDateTime cutoffDateTime);
+
+	boolean existsByMovieIdAndCinemaIdAndScreeningDatetime(
+			Long movieId,
+			Long cinemaId,
+			LocalDateTime screeningDatetime
+	);
 }

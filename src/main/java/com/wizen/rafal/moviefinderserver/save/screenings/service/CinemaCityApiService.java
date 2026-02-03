@@ -18,7 +18,8 @@ import java.time.format.DateTimeFormatter;
 public class CinemaCityApiService {
 
 	@Autowired
-	@Qualifier("screeningsRestTemplate")
+	@Qualifier("restTemplate")
+//	@Qualifier("screeningsRestTemplate")
 	private RestTemplate restTemplate;
 
 	private static final String API_URL_TEMPLATE =

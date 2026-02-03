@@ -19,7 +19,7 @@ CREATE TABLE movies
 
 CREATE TABLE cinemas
 (
-    id                 BIGINT PRIMARY KEY,
+    id                 INTEGER PRIMARY KEY,
     provider_id        BIGINT       NOT NULL,
     external_cinema_id VARCHAR(255) NOT NULL,
     name               VARCHAR(255),
@@ -47,9 +47,9 @@ CREATE TABLE movie_sources
 
 CREATE TABLE screenings
 (
-    id                 BIGINT PRIMARY KEY,
+    id                 INTEGER PRIMARY KEY,
     movie_id           BIGINT NOT NULL,
-    cinema_id          BIGINT NOT NULL,
+    cinema_id          INTEGER NOT NULL,
     screening_datetime TIMESTAMP,
     screening_url      TEXT,
     created_at         TIMESTAMP,
