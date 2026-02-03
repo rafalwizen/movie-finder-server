@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.search.repository;
+package com.wizen.rafal.moviefinderserver.domain.repository;
 
 import com.wizen.rafal.moviefinderserver.domain.model.Screening;
 import org.springframework.data.jpa.repository.JpaRepository;

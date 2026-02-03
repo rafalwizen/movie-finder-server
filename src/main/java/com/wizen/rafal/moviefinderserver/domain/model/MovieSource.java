@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.save.movies.model;
+package com.wizen.rafal.moviefinderserver.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,7 +35,7 @@ public class MovieSource {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "movie_id", insertable = false, updatable = false)
-	private MovieSave movie;
+	private Movie movie;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "provider_id", insertable = false, updatable = false)

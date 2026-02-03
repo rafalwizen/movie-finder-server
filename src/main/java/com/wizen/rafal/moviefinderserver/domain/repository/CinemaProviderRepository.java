@@ -1,6 +1,6 @@
-package com.wizen.rafal.moviefinderserver.save.movies.repository;
+package com.wizen.rafal.moviefinderserver.domain.repository;
 
-import com.wizen.rafal.moviefinderserver.save.movies.model.CinemaProvider;
+import com.wizen.rafal.moviefinderserver.domain.model.CinemaProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

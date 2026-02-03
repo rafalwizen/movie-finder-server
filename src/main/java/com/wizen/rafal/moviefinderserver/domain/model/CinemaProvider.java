@@ -1,4 +1,4 @@
-package com.wizen.rafal.moviefinderserver.save.movies.model;
+package com.wizen.rafal.moviefinderserver.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

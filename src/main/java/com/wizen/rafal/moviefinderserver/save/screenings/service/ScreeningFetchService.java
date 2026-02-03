@@ -2,14 +2,14 @@ package com.wizen.rafal.moviefinderserver.save.screenings.service;
 
 import com.wizen.rafal.moviefinderserver.domain.model.Cinema;
 import com.wizen.rafal.moviefinderserver.domain.model.Movie;
+import com.wizen.rafal.moviefinderserver.domain.model.MovieSource;
 import com.wizen.rafal.moviefinderserver.domain.model.Screening;
 import com.wizen.rafal.moviefinderserver.domain.repository.CinemaRepository;
 import com.wizen.rafal.moviefinderserver.domain.repository.MovieRepository;
+import com.wizen.rafal.moviefinderserver.domain.repository.MovieSourceRepository;
 import com.wizen.rafal.moviefinderserver.save.screenings.config.ScreeningFetchProperties;
 import com.wizen.rafal.moviefinderserver.save.screenings.dto.CinemaCityResponse;
-import com.wizen.rafal.moviefinderserver.save.screenings.model.MovieSourceScreening;
-import com.wizen.rafal.moviefinderserver.save.screenings.repository.MovieSourceScreeningRepository;
-import com.wizen.rafal.moviefinderserver.search.repository.ScreeningRepository;
+import com.wizen.rafal.moviefinderserver.domain.repository.ScreeningRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.List;
 @Slf4j
 public class ScreeningFetchService {
 
-	private final MovieSourceScreeningRepository movieSourceRepository;
+	private final MovieSourceRepository movieSourceRepository;
 	private final MovieRepository movieRepository;
 	private final ScreeningRepository screeningRepository;
 	private final CinemaRepository cinemaRepository;
@@ -43,14 +43,14 @@ public class ScreeningFetchService {
 
 		log.info("Starting to fetch screenings for {} days: {}", datesToFetch.size(), datesToFetch);
 
-		List<MovieSourceScreening> movieSources = movieSourceRepository.findByProviderId(CINEMA_CITY_PROVIDER_ID);
+		List<MovieSource> movieSources = movieSourceRepository.findByProviderId(CINEMA_CITY_PROVIDER_ID);
 		log.info("Found {} movies for Cinema City provider", movieSources.size());
 
 		int totalProcessed = 0;
 		int totalScreeningsSaved = 0;
 		int totalScreeningsSkipped = 0;
 
-		for (MovieSourceScreening movieSource : movieSources) {
+		for (MovieSource movieSource : movieSources) {
 			try {
 				ScreeningStats stats = processMovieSourceForAllDates(movieSource, datesToFetch);
 				totalScreeningsSaved += stats.saved;
@@ -88,7 +88,7 @@ public class ScreeningFetchService {
 		return dates;
 	}
 
-	private ScreeningStats processMovieSourceForAllDates(MovieSourceScreening movieSource, List<LocalDate> dates) {
+	private ScreeningStats processMovieSourceForAllDates(MovieSource movieSource, List<LocalDate> dates) {
 		ScreeningStats totalStats = new ScreeningStats();
 
 		for (LocalDate date : dates) {
@@ -108,7 +108,7 @@ public class ScreeningFetchService {
 		return totalStats;
 	}
 
-	private ScreeningStats processMovieSourceForDate(MovieSourceScreening movieSource, LocalDate date) {
+	private ScreeningStats processMovieSourceForDate(MovieSource movieSource, LocalDate date) {
 		CinemaCityResponse response = cinemaCityApiService.fetchScreenings(
 				movieSource.getExternalMovieId(),
 				date
@@ -141,7 +141,7 @@ public class ScreeningFetchService {
 		return stats;
 	}
 
-	private boolean saveScreeningIfNotExists(MovieSourceScreening movieSource, CinemaCityResponse.Event event) {
+	private boolean saveScreeningIfNotExists(MovieSource movieSource, CinemaCityResponse.Event event) {
 		Long cinemaId = parseCinemaId(event.getCinemaId());
 		LocalDateTime screeningDateTime = parseDateTime(event.getEventDateTime());
 

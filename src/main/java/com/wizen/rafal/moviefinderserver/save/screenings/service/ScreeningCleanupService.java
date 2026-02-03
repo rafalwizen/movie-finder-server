@@ -1,7 +1,7 @@
 package com.wizen.rafal.moviefinderserver.save.screenings.service;
 
 import com.wizen.rafal.moviefinderserver.save.screenings.config.ScreeningFetchProperties;
-import com.wizen.rafal.moviefinderserver.search.repository.ScreeningRepository;
+import com.wizen.rafal.moviefinderserver.domain.repository.ScreeningRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,14 +1,14 @@
 package com.wizen.rafal.moviefinderserver.save.movies.service;
 
+import com.wizen.rafal.moviefinderserver.domain.model.Movie;
+import com.wizen.rafal.moviefinderserver.domain.repository.MovieRepository;
 import com.wizen.rafal.moviefinderserver.save.movies.config.CinemaCityProperties;
 import com.wizen.rafal.moviefinderserver.save.movies.dto.CinemaCityResponse;
 import com.wizen.rafal.moviefinderserver.save.movies.dto.FilmDetailsResponse;
-import com.wizen.rafal.moviefinderserver.save.movies.model.CinemaProvider;
-import com.wizen.rafal.moviefinderserver.save.movies.model.MovieSave;
-import com.wizen.rafal.moviefinderserver.save.movies.model.MovieSource;
-import com.wizen.rafal.moviefinderserver.save.movies.repository.CinemaProviderRepository;
-import com.wizen.rafal.moviefinderserver.save.movies.repository.MovieSaveRepository;
-import com.wizen.rafal.moviefinderserver.save.movies.repository.MovieSourceRepository;
+import com.wizen.rafal.moviefinderserver.domain.model.CinemaProvider;
+import com.wizen.rafal.moviefinderserver.domain.model.MovieSource;
+import com.wizen.rafal.moviefinderserver.domain.repository.CinemaProviderRepository;
+import com.wizen.rafal.moviefinderserver.domain.repository.MovieSourceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class FilmDownloadService {
 	private static final String CINEMA_CITY_PROVIDER_CODE = "CINEMA_CITY";
 
 	private final CinemaCityProperties cinemaCityProperties;
-	private final MovieSaveRepository movieRepository;
+	private final MovieRepository movieRepository;
 	private final MovieSourceRepository movieSourceRepository;
 	private final CinemaProviderRepository cinemaProviderRepository;
 	private final RestTemplate restTemplate;
@@ -64,10 +64,10 @@ public class FilmDownloadService {
 						if (existingMovieSource.isPresent()) {
 							// Film już istnieje - sprawdź czy ma plakat
 							Long existingMovieId = existingMovieSource.get().getMovieId();
-							Optional<MovieSave> existingMovie = movieRepository.findById(existingMovieId);
+							Optional<Movie> existingMovie = movieRepository.findById(existingMovieId);
 
 							if (existingMovie.isPresent()) {
-								MovieSave movie = existingMovie.get();
+								Movie movie = existingMovie.get();
 
 								if (movie.getPosterUrl() == null || movie.getPosterUrl().isEmpty()) {
 									// Film nie ma plakatu - pobierz i uzupełnij
@@ -99,7 +99,7 @@ public class FilmDownloadService {
 
 						// Utwórz nowy film domenowy
 						Long newMovieId = movieRepository.findMaxId() + 1;
-						MovieSave movie = MovieSave.builder()
+						Movie movie = Movie.builder()
 								.id(newMovieId)
 								.title(filmDto.getFilmName())
 								.posterUrl(posterUrl)
@@ -187,7 +187,7 @@ public class FilmDownloadService {
 		return newProvider;
 	}
 
-	public List<MovieSave> getAllMovies() {
+	public List<Movie> getAllMovies() {
 		return movieRepository.findAll();
 	}
 }

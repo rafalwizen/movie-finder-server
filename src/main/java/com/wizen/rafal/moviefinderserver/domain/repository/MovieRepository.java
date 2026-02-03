@@ -1,6 +1,7 @@
 package com.wizen.rafal.moviefinderserver.domain.repository;
 
 import com.wizen.rafal.moviefinderserver.domain.model.Movie;
+import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,6 +23,6 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 			"ORDER BY m.title")
 	List<Movie> findAllMoviesWithActiveScreenings();
 
-
-	Optional<Movie> findById(Long Id);
+	@Query("SELECT COALESCE(MAX(m.id), 0) FROM Movie m")
+	Long findMaxId();
 }
