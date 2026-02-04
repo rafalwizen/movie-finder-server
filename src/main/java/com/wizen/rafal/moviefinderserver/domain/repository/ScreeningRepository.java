@@ -24,9 +24,11 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
 			"JOIN FETCH s.movie m " +
 			"JOIN FETCH s.cinema c " +
 			"WHERE m.id = :movieId " +
-			"AND s.screeningDatetime >= CURRENT_TIMESTAMP " +
+			"AND s.screeningDatetime >= :now " +
 			"ORDER BY s.screeningDatetime")
-	List<Screening> findFutureScreeningsByMovieId(@Param("movieId") Long movieId);
+	List<Screening> findFutureScreeningsByMovieId(
+			@Param("movieId") Long movieId,
+			@Param("now") LocalDateTime now);
 
 	@Modifying
 	@Query("DELETE FROM Screening s WHERE s.screeningDatetime < :cutoffDateTime")

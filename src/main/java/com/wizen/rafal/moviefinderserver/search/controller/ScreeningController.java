@@ -5,6 +5,7 @@ import com.wizen.rafal.moviefinderserver.domain.model.Screening;
 import com.wizen.rafal.moviefinderserver.domain.repository.ScreeningRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ public class ScreeningController {
 		if (includePast) {
 			screenings = screeningRepository.findScreeningsByMovieId(movieId);
 		} else {
-			screenings = screeningRepository.findFutureScreeningsByMovieId(movieId);
+			screenings = screeningRepository.findFutureScreeningsByMovieId(movieId, LocalDateTime.now());
 		}
 
 		return screenings.stream()
