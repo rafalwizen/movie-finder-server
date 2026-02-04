@@ -46,33 +46,37 @@ GET /api/movies?q=spider
 
 ---
 
-### 2. Movie Screenings by Title
+### 2. Movie Screenings by Movie ID
 
-**Endpoint:** `GET /api/screenings/search`
+**Endpoint:** `GET /api/screenings/by-movie`
 
-**Description:** Returns a list of screenings for a movie with the given title (full or partial).
+**Description:** Returns a list of screenings for a movie with the given ID.
 
 **Query Parameters:**
-- `title` (required) - full or partial movie title
+- `movieId` (required) - movie ID
+- `includePast` (optional, default: `false`) - whether to include past screenings
+    - `false` - returns only future screenings (from now onwards)
+    - `true` - returns all screenings (past and future)
 
 **Example Requests:**
 ```bash
-GET /api/screenings/search?title=avengers
-GET /api/screenings/search?title=Avengers: Endgame
+GET /api/screenings/by-movie?movieId=1
+GET /api/screenings/by-movie?movieId=1&includePast=false
+GET /api/screenings/by-movie?movieId=1&includePast=true
 ```
 
 **Response:**
 ```json
 [
   {
-    "screeningDatetime": "2026-01-20T18:30:00",
+    "screeningDatetime": "2026-02-20T18:30:00",
     "cinemaName": "Cinema City",
     "cinemaCity": "Warsaw",
     "cinemaAddress": "59 Złota Street",
     "screeningUrl": "https://www.cinema-city.pl/screening/12345"
   },
   {
-    "screeningDatetime": "2026-01-20T21:00:00",
+    "screeningDatetime": "2026-02-20T21:00:00",
     "cinemaName": "Multikino",
     "cinemaCity": "Krakow",
     "cinemaAddress": "34 Podgórska Street",
@@ -83,7 +87,7 @@ GET /api/screenings/search?title=Avengers: Endgame
 
 **Status Codes:**
 - `200 OK` - request completed successfully
-- `400 Bad Request` - missing required `title` parameter
+- `400 Bad Request` - missing required `movieId` parameter
 
 ---
 
@@ -164,9 +168,14 @@ curl -X GET "http://localhost:8080/api/movies"
 curl -X GET "http://localhost:8080/api/movies?q=batman"
 ```
 
-**Find screenings for a movie:**
+**Find future screenings for a movie:**
 ```bash
-curl -X GET "http://localhost:8080/api/screenings/search?title=batman"
+curl -X GET "http://localhost:8080/api/screenings/by-movie?movieId=1"
+```
+
+**Find all screenings (including past) for a movie:**
+```bash
+curl -X GET "http://localhost:8080/api/screenings/by-movie?movieId=1&includePast=true"
 ```
 
 ### JavaScript (fetch)
@@ -182,8 +191,13 @@ fetch('http://localhost:8080/api/movies?q=batman')
   .then(response => response.json())
   .then(data => console.log(data));
 
-// Find screenings
-fetch('http://localhost:8080/api/screenings/search?title=batman')
+// Find future screenings for a movie
+fetch('http://localhost:8080/api/screenings/by-movie?movieId=1')
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// Find all screenings (including past)
+fetch('http://localhost:8080/api/screenings/by-movie?movieId=1&includePast=true')
   .then(response => response.json())
   .then(data => console.log(data));
 ```
@@ -193,6 +207,8 @@ fetch('http://localhost:8080/api/screenings/search?title=batman')
 ## Notes
 
 - All endpoints return data in JSON format
-- Search is case-insensitive
 - The `/api/movies` endpoint returns only movies that have at least one active screening in the database
+- The `/api/screenings/by-movie` endpoint by default returns only future screenings (from current datetime onwards)
+- Set `includePast=true` to retrieve all screenings including those that already occurred
 - Dates and times are returned in ISO 8601 format (e.g., `2026-01-20T18:30:00`)
+- Screenings are sorted by datetime in ascending order (earliest first)

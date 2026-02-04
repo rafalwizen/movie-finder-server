@@ -16,9 +16,17 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
 	@Query("SELECT s FROM Screening s " +
 			"JOIN FETCH s.movie m " +
 			"JOIN FETCH s.cinema c " +
-			"WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :title, '%')) " +
+			"WHERE m.id = :movieId " +
 			"ORDER BY s.screeningDatetime")
-	List<Screening> findScreeningsByMovieTitle(@Param("title") String title);
+	List<Screening> findScreeningsByMovieId(@Param("movieId") Long movieId);
+
+	@Query("SELECT s FROM Screening s " +
+			"JOIN FETCH s.movie m " +
+			"JOIN FETCH s.cinema c " +
+			"WHERE m.id = :movieId " +
+			"AND s.screeningDatetime >= CURRENT_TIMESTAMP " +
+			"ORDER BY s.screeningDatetime")
+	List<Screening> findFutureScreeningsByMovieId(@Param("movieId") Long movieId);
 
 	@Modifying
 	@Query("DELETE FROM Screening s WHERE s.screeningDatetime < :cutoffDateTime")

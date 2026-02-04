@@ -15,9 +15,18 @@ public class ScreeningController {
 
 	private final ScreeningRepository screeningRepository;
 
-	@GetMapping("/search")
-	public List<ScreeningDTO> searchScreenings(@RequestParam String title) {
-		List<Screening> screenings = screeningRepository.findScreeningsByMovieTitle(title);
+	@GetMapping("/by-movie")
+	public List<ScreeningDTO> getScreeningsByMovie(
+			@RequestParam Long movieId,
+			@RequestParam(required = false, defaultValue = "false") boolean includePast) {
+
+		List<Screening> screenings;
+
+		if (includePast) {
+			screenings = screeningRepository.findScreeningsByMovieId(movieId);
+		} else {
+			screenings = screeningRepository.findFutureScreeningsByMovieId(movieId);
+		}
 
 		return screenings.stream()
 				.map(s -> new ScreeningDTO(
