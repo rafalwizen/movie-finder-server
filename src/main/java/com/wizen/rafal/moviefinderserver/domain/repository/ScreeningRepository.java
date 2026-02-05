@@ -16,6 +16,7 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
 	@Query("SELECT s FROM Screening s " +
 			"JOIN FETCH s.movie m " +
 			"JOIN FETCH s.cinema c " +
+			"JOIN FETCH c.provider p " +
 			"WHERE m.id = :movieId " +
 			"ORDER BY s.screeningDatetime")
 	List<Screening> findScreeningsByMovieId(@Param("movieId") Long movieId);
@@ -23,6 +24,7 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
 	@Query("SELECT s FROM Screening s " +
 			"JOIN FETCH s.movie m " +
 			"JOIN FETCH s.cinema c " +
+			"JOIN FETCH c.provider p " +
 			"WHERE m.id = :movieId " +
 			"AND s.screeningDatetime >= :now " +
 			"ORDER BY s.screeningDatetime")

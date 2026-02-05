@@ -17,8 +17,9 @@ public class Cinema {
 	@Column(name = "id", columnDefinition = "INTEGER")
 	private Long id;
 
-	@Column(name = "provider_id", nullable = false)
-	private Long providerId;
+	@ManyToOne
+	@JoinColumn(name = "provider_id", nullable = false)
+	private CinemaProvider provider;
 
 	@Column(name = "external_cinema_id", nullable = false)
 	private String externalCinemaId;

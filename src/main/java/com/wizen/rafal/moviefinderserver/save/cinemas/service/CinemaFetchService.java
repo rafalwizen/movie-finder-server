@@ -3,7 +3,9 @@ package com.wizen.rafal.moviefinderserver.save.cinemas.service;
 import com.wizen.rafal.moviefinderserver.save.cinemas.config.CinemaFetchProperties;
 import com.wizen.rafal.moviefinderserver.save.cinemas.dto.CinemaCityResponse;
 import com.wizen.rafal.moviefinderserver.domain.model.Cinema;
+import com.wizen.rafal.moviefinderserver.domain.model.CinemaProvider;
 import com.wizen.rafal.moviefinderserver.domain.repository.CinemaRepository;
+import com.wizen.rafal.moviefinderserver.domain.repository.CinemaProviderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,16 @@ public class CinemaFetchService {
 	private static final Logger log = LoggerFactory.getLogger(CinemaFetchService.class);
 
 	private final CinemaRepository cinemaRepository;
+	private final CinemaProviderRepository cinemaProviderRepository;
 	private final CinemaFetchProperties properties;
 	private final RestTemplate restTemplate;
 
 	public CinemaFetchService(CinemaRepository cinemaRepository,
+							  CinemaProviderRepository cinemaProviderRepository,
 							  CinemaFetchProperties properties,
 							  RestTemplate restTemplate) {
 		this.cinemaRepository = cinemaRepository;
+		this.cinemaProviderRepository = cinemaProviderRepository;
 		this.properties = properties;
 		this.restTemplate = restTemplate;
 	}
@@ -38,6 +43,10 @@ public class CinemaFetchService {
 		log.info("Starting cinema fetch from: {}", properties.getUrl());
 
 		try {
+			CinemaProvider provider = cinemaProviderRepository.findById(properties.getProviderId())
+					.orElseThrow(() -> new RuntimeException(
+							"CinemaProvider not found with id: " + properties.getProviderId()));
+
 			CinemaCityResponse response = restTemplate.getForObject(
 					properties.getUrl(),
 					CinemaCityResponse.class
@@ -78,7 +87,7 @@ public class CinemaFetchService {
 						continue;
 					}
 
-					Cinema cinema = mapToCinema(dto, externalCinemaId);
+					Cinema cinema = mapToCinema(dto, externalCinemaId, provider);
 					cinema = cinemaRepository.save(cinema);
 					savedCount++;
 
@@ -107,10 +116,10 @@ public class CinemaFetchService {
 		}
 	}
 
-	private Cinema mapToCinema(CinemaCityResponse.CinemaDto dto, String externalCinemaId) {
+	private Cinema mapToCinema(CinemaCityResponse.CinemaDto dto, String externalCinemaId, CinemaProvider provider) {
 		Cinema cinema = new Cinema();
 		cinema.setExternalCinemaId(externalCinemaId);
-		cinema.setProviderId(properties.getProviderId());
+		cinema.setProvider(provider);
 		cinema.setName(dto.getDisplayName());
 		cinema.setWebsiteUrl(dto.getLink());
 		cinema.setLatitude(dto.getLatitude());

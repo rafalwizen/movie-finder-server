@@ -35,7 +35,8 @@ public class ScreeningController {
 						s.getCinema().getName(),
 						s.getCinema().getCity(),
 						s.getCinema().getAddress(),
-						s.getScreeningUrl()
+						s.getScreeningUrl(),
+						s.getCinema().getProvider().getCode()
 				))
 				.collect(Collectors.toList());
 	}
