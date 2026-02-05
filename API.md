@@ -55,8 +55,8 @@ GET /api/movies?q=spider
 **Query Parameters:**
 - `movieId` (required) - movie ID
 - `includePast` (optional, default: `false`) - whether to include past screenings
-    - `false` - returns only future screenings (from now onwards)
-    - `true` - returns all screenings (past and future)
+  - `false` - returns only future screenings (from now onwards)
+  - `true` - returns all screenings (past and future)
 
 **Example Requests:**
 ```bash
@@ -73,14 +73,16 @@ GET /api/screenings/by-movie?movieId=1&includePast=true
     "cinemaName": "Cinema City",
     "cinemaCity": "Warsaw",
     "cinemaAddress": "59 Złota Street",
-    "screeningUrl": "https://www.cinema-city.pl/screening/12345"
+    "screeningUrl": "https://www.cinema-city.pl/screening/12345",
+    "providerCode": "CINEMA_CITY"
   },
   {
     "screeningDatetime": "2026-02-20T21:00:00",
     "cinemaName": "Multikino",
     "cinemaCity": "Krakow",
     "cinemaAddress": "34 Podgórska Street",
-    "screeningUrl": "https://www.multikino.pl/screening/67890"
+    "screeningUrl": "https://www.multikino.pl/screening/67890",
+    "providerCode": "MULTIKINO"
   }
 ]
 ```
@@ -148,7 +150,8 @@ GET /api/allMovies
   "cinemaName": "string",
   "cinemaCity": "string",
   "cinemaAddress": "string",
-  "screeningUrl": "string"
+  "screeningUrl": "string",
+  "providerCode": "string"
 }
 ```
 
@@ -212,3 +215,4 @@ fetch('http://localhost:8080/api/screenings/by-movie?movieId=1&includePast=true'
 - Set `includePast=true` to retrieve all screenings including those that already occurred
 - Dates and times are returned in ISO 8601 format (e.g., `2026-01-20T18:30:00`)
 - Screenings are sorted by datetime in ascending order (earliest first)
+- The `providerCode` field identifies the cinema provider (e.g., "CINEMA_CITY", "MULTIKINO")
