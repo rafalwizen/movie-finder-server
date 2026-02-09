@@ -12,7 +12,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.cinema</groupId>
+    <groupId>com.wizen.rafal</groupId>
     <artifactId>movie-finder-server</artifactId>
     <version>1.0.0</version>
     <name>movie-finder-server</name>
