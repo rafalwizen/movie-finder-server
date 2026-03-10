@@ -2,10 +2,12 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
+RUN mkdir -p db
+
 COPY target/*.jar app.jar
 COPY db/cinema.db db/cinema.db
 
-RUN mkdir -p db && chmod -R 777 db
+RUN chmod -R 777 db
 
 EXPOSE 8080
 
