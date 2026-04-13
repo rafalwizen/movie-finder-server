@@ -9,3 +9,8 @@ providers:
     screenings:
       url-template: https://www.cinema-city.pl/pl/data-api-service/v1/quickbook/10103/cinema-events/in-group/katowice/with-film/%s/at-date/%s?attr=&lang=pl_PL
       enabled: true
+  multikino:
+    screenings:
+      base-url: https://www.multikino.pl/api/microservice/showings
+      rate-limit-ms: 500
+      enabled: true
