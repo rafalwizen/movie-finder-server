@@ -1,5 +1,11 @@
 screening-fetch:
-  days-ahead: 1  # Liczba dni od dzisiaj (0 = tylko dzisiaj, 3 = dzisiaj + 3 kolejne dni)
+  days-ahead: 1
   cleanup:
-    enabled: true  # Czy włączyć automatyczne czyszczenie starych seansów
-    days-to-keep: 0  # Usuń seanse starsze niż X dni (null = nie usuwaj)
+    enabled: true
+    days-to-keep: 0
+
+providers:
+  cinema-city:
+    screenings:
+      url-template: https://www.cinema-city.pl/pl/data-api-service/v1/quickbook/10103/cinema-events/in-group/katowice/with-film/%s/at-date/%s?attr=&lang=pl_PL
+      enabled: true
