@@ -1,34 +1,34 @@
 package com.wizen.rafal.moviefinderserver.save.cinemas.runner;
 
-import com.wizen.rafal.moviefinderserver.save.cinemas.service.CinemaFetchService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.wizen.rafal.moviefinderserver.save.cinemas.CinemaImporter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @Profile("fetch-cinemas")
+@RequiredArgsConstructor
+@Slf4j
 public class CinemaFetchRunner implements CommandLineRunner {
 
-	private static final Logger log = LoggerFactory.getLogger(CinemaFetchRunner.class);
+    private final List<CinemaImporter> importers;
 
-	private final CinemaFetchService cinemaFetchService;
+    @Override
+    public void run(String... args) {
+        log.info("Starting cinema fetch for {} providers", importers.size());
 
-	public CinemaFetchRunner(CinemaFetchService cinemaFetchService) {
-		this.cinemaFetchService = cinemaFetchService;
-	}
+        for (CinemaImporter importer : importers) {
+            try {
+                importer.importCinemas();
+            } catch (Exception e) {
+                log.error("Cinema fetch failed for provider", e);
+            }
+        }
 
-	@Override
-	public void run(String... args) {
-		log.info("Starting cinema fetch process...");
-
-		try {
-			cinemaFetchService.fetchAndSaveCinemas();
-			log.info("Cinema fetch process completed successfully");
-		} catch (Exception e) {
-			log.error("Cinema fetch process failed", e);
-			System.exit(1);
-		}
-	}
+        log.info("Cinema fetch process completed");
+    }
 }

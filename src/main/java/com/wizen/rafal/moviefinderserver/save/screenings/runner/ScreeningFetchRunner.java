@@ -1,12 +1,14 @@
 package com.wizen.rafal.moviefinderserver.save.screenings.runner;
 
+import com.wizen.rafal.moviefinderserver.save.screenings.ScreeningImporter;
 import com.wizen.rafal.moviefinderserver.save.screenings.service.ScreeningCleanupService;
-import com.wizen.rafal.moviefinderserver.save.screenings.service.ScreeningFetchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Profile("fetch-screenings")
@@ -14,24 +16,28 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ScreeningFetchRunner implements CommandLineRunner {
 
-	private final ScreeningFetchService screeningFetchService;
-	private final ScreeningCleanupService screeningCleanupService;
+    private final List<ScreeningImporter> importers;
+    private final ScreeningCleanupService screeningCleanupService;
 
-	@Override
-	public void run(String... args) {
-		log.info("=== Starting Screening Fetch Process ===");
+    @Override
+    public void run(String... args) {
+        log.info("Starting screening fetch for {} providers", importers.size());
 
-		try {
-			// First, cleanup old screenings if enabled
-			screeningCleanupService.cleanupOldScreenings();
+        try {
+            screeningCleanupService.cleanupOldScreenings();
 
-			// Then, fetch new screenings
-			screeningFetchService.fetchAllScreenings();
+            for (ScreeningImporter importer : importers) {
+                try {
+                    importer.importScreenings();
+                } catch (Exception e) {
+                    log.error("Screening fetch failed for provider", e);
+                }
+            }
 
-			log.info("=== Screening Fetch Process Completed Successfully ===");
-		} catch (Exception e) {
-			log.error("=== Screening Fetch Process Failed ===", e);
-			System.exit(1);
-		}
-	}
+            log.info("Screening fetch process completed");
+        } catch (Exception e) {
+            log.error("Screening fetch process failed", e);
+            System.exit(1);
+        }
+    }
 }
