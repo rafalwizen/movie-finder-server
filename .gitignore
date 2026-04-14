@@ -34,3 +34,6 @@ build/
 
 .claude/
 docs/
+
+### Database ###
+db/cinema.db
