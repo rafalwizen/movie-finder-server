@@ -45,6 +45,11 @@ public class CinemaCityScreeningImporter implements ScreeningImporter {
     private final RestTemplate restTemplate;
 
     @Override
+    public String getProviderCode() {
+        return PROVIDER_CODE;
+    }
+
+    @Override
     @Transactional
     public void importScreenings() {
         if (!config.isEnabled()) {

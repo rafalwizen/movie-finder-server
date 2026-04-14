@@ -28,6 +28,11 @@ public class MultikinoCinemaImporter implements CinemaImporter {
     private final RestTemplate restTemplate;
 
     @Override
+    public String getProviderCode() {
+        return PROVIDER_CODE;
+    }
+
+    @Override
     public void importCinemas() {
         if (!config.isEnabled()) {
             log.info("Multikino cinema import is disabled");

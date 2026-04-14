@@ -33,6 +33,11 @@ public class CinemaCityFilmImporter implements FilmImporter {
     private final RestTemplate restTemplate;
 
     @Override
+    public String getProviderCode() {
+        return PROVIDER_CODE;
+    }
+
+    @Override
     @Transactional
     public void importFilms() {
         if (!config.isEnabled()) {
