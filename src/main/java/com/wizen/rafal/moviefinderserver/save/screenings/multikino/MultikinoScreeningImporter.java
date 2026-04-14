@@ -13,8 +13,12 @@ import com.wizen.rafal.moviefinderserver.save.common.service.ProviderService;
 import com.wizen.rafal.moviefinderserver.save.screenings.ScreeningImporter;
 import com.wizen.rafal.moviefinderserver.save.screenings.multikino.config.MultikinoScreeningConfig;
 import com.wizen.rafal.moviefinderserver.save.screenings.multikino.dto.MultikinoScreeningResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -27,7 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class MultikinoScreeningImporter implements ScreeningImporter {
 
@@ -44,7 +47,24 @@ public class MultikinoScreeningImporter implements ScreeningImporter {
     private final CinemaRepository cinemaRepository;
     private final ProviderService providerService;
     private final MultikinoScreeningConfig config;
-    private final RestTemplate restTemplate;
+    private final RestTemplate multikinoRestTemplate;
+
+    public MultikinoScreeningImporter(
+            MovieSourceRepository movieSourceRepository,
+            MovieRepository movieRepository,
+            ScreeningRepository screeningRepository,
+            CinemaRepository cinemaRepository,
+            ProviderService providerService,
+            MultikinoScreeningConfig config,
+            @Qualifier("multikinoRestTemplate") RestTemplate multikinoRestTemplate) {
+        this.movieSourceRepository = movieSourceRepository;
+        this.movieRepository = movieRepository;
+        this.screeningRepository = screeningRepository;
+        this.cinemaRepository = cinemaRepository;
+        this.providerService = providerService;
+        this.config = config;
+        this.multikinoRestTemplate = multikinoRestTemplate;
+    }
 
     @Override
     @Transactional
@@ -62,6 +82,8 @@ public class MultikinoScreeningImporter implements ScreeningImporter {
 
         log.info("Starting Multikino screening fetch for {} cinemas", cinemas.size());
 
+        warmUpSession();
+
         int totalSaved = 0;
         int totalSkipped = 0;
 
@@ -70,7 +92,9 @@ public class MultikinoScreeningImporter implements ScreeningImporter {
                 String url = config.getBaseUrl() + "/cinemas/" + cinema.getExternalCinemaId() + "/films";
                 log.debug("Fetching screenings for Multikino cinema: {} ({})", cinema.getName(), cinema.getExternalCinemaId());
 
-                MultikinoScreeningResponse response = restTemplate.getForObject(url, MultikinoScreeningResponse.class);
+                ResponseEntity<MultikinoScreeningResponse> httpResponse = multikinoRestTemplate.exchange(
+                        url, HttpMethod.GET, new HttpEntity<>(browserHeaders()), MultikinoScreeningResponse.class);
+                MultikinoScreeningResponse response = httpResponse.getBody();
 
                 if (response == null || response.getResult() == null) {
                     log.debug("No screenings response for cinema {}", cinema.getName());
@@ -170,6 +194,28 @@ public class MultikinoScreeningImporter implements ScreeningImporter {
             Thread.sleep(config.getRateLimitMs());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private HttpHeaders browserHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
+        headers.set("Referer", MULTIKINO_BASE_URL + "/");
+        return headers;
+    }
+
+    private void warmUpSession() {
+        try {
+            log.info("Warming up Multikino session by visiting main page...");
+            multikinoRestTemplate.exchange(
+                    MULTIKINO_BASE_URL + "/",
+                    HttpMethod.GET,
+                    new HttpEntity<>(browserHeaders()),
+                    String.class
+            );
+            log.info("Session warm-up completed");
+        } catch (Exception e) {
+            log.warn("Session warm-up failed (will attempt API calls anyway): {}", e.getMessage());
         }
     }
 }
