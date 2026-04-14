@@ -67,6 +67,11 @@ public class MultikinoScreeningImporter implements ScreeningImporter {
     }
 
     @Override
+    public String getProviderCode() {
+        return PROVIDER_CODE;
+    }
+
+    @Override
     @Transactional
     public void importScreenings() {
         if (!config.isEnabled()) {
@@ -79,6 +84,11 @@ public class MultikinoScreeningImporter implements ScreeningImporter {
         List<Cinema> cinemas = cinemaRepository.findAll().stream()
                 .filter(c -> c.getProvider().getId().equals(provider.getId()))
                 .toList();
+
+        if (config.getCinemaLimit() > 0 && cinemas.size() > config.getCinemaLimit()) {
+            log.info("Limiting to {} cinemas out of {} (config limit)", config.getCinemaLimit(), cinemas.size());
+            cinemas = cinemas.subList(0, config.getCinemaLimit());
+        }
 
         log.info("Starting Multikino screening fetch for {} cinemas", cinemas.size());
 

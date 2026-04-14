@@ -14,3 +14,4 @@ providers:
       base-url: https://www.multikino.pl/api/microservice/showings
       rate-limit-ms: 500
       enabled: true
+      cinema-limit: 2

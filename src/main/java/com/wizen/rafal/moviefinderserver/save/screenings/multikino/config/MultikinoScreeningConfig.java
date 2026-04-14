@@ -14,4 +14,5 @@ public class MultikinoScreeningConfig {
     private String baseUrl;
     private int rateLimitMs = 500;
     private boolean enabled = true;
+    private int cinemaLimit = 0; // 0 = no limit
 }

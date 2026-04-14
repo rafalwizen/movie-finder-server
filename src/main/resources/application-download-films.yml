@@ -9,3 +9,4 @@ providers:
     films:
       url: https://www.multikino.pl/api/microservice/showings/films
       enabled: true
+      limit: 5

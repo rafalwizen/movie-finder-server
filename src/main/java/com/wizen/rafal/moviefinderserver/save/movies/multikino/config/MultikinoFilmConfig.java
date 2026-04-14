@@ -13,4 +13,5 @@ public class MultikinoFilmConfig {
 
     private String url;
     private boolean enabled = true;
+    private int limit = 0; // 0 = no limit
 }

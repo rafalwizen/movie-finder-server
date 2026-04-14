@@ -35,6 +35,11 @@ public class MultikinoFilmImporter implements FilmImporter {
     private final RestTemplate restTemplate;
 
     @Override
+    public String getProviderCode() {
+        return PROVIDER_CODE;
+    }
+
+    @Override
     @Transactional
     public void importFilms() {
         if (!config.isEnabled()) {
@@ -59,6 +64,11 @@ public class MultikinoFilmImporter implements FilmImporter {
 
             List<MultikinoFilmResponse.FilmDto> films = response.getResult();
             log.info("Found {} films from Multikino", films.size());
+
+            if (config.getLimit() > 0 && films.size() > config.getLimit()) {
+                log.info("Limiting to {} films (config limit)", config.getLimit());
+                films = films.subList(0, config.getLimit());
+            }
 
             int totalAdded = 0;
             int totalSkipped = 0;
