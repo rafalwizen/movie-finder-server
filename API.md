@@ -129,6 +129,9 @@ GET /api/allMovies
 
 ```
 
+**Status Codes:**
+- `200 OK` - request completed successfully
+
 ---
 
 ## Data Models
@@ -210,9 +213,10 @@ fetch('http://localhost:8080/api/screenings/by-movie?movieId=1&includePast=true'
 ## Notes
 
 - All endpoints return data in JSON format
-- The `/api/movies` endpoint returns only movies that have at least one active screening in the database
+- The `/api/movies` endpoint returns only movies that have at least one active screening in the database, sorted alphabetically by title
 - The `/api/screenings/by-movie` endpoint by default returns only future screenings (from current datetime onwards)
 - Set `includePast=true` to retrieve all screenings including those that already occurred
 - Dates and times are returned in ISO 8601 format (e.g., `2026-01-20T18:30:00`)
 - Screenings are sorted by datetime in ascending order (earliest first)
 - The `providerCode` field identifies the cinema provider (e.g., "CINEMA_CITY", "MULTIKINO")
+- The `/api/allMovies` endpoint also returns a list of `MovieDTO` objects (same structure as `/api/movies`)
