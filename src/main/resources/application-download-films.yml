@@ -10,3 +10,10 @@ providers:
       url: https://www.multikino.pl/api/microservice/showings/films
       enabled: true
       limit: 5
+  helios:
+    films:
+      base-url: https://helios.pl
+      enabled: true
+      fetch-film-details: true
+      rate-limit-ms: 1000
+      cinema-limit: 0

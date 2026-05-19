@@ -7,3 +7,9 @@ providers:
     cinemas:
       url: https://www.multikino.pl/api/microservice/showings/cinemas
       enabled: true
+  helios:
+    cinemas:
+      url: https://helios.pl/
+      enabled: true
+      fetch-details: true
+      rate-limit-ms: 1000
