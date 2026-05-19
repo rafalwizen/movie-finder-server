@@ -15,3 +15,9 @@ providers:
       rate-limit-ms: 500
       enabled: true
       cinema-limit: 2
+  helios:
+    screenings:
+      base-url: https://helios.pl
+      enabled: true
+      rate-limit-ms: 1000
+      cinema-limit: 0
