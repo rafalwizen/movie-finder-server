@@ -191,6 +191,9 @@ public class HeliosFilmImporter implements FilmImporter {
     }
 
     private void applyMovieJsonLd(FilmData data, JsonNode node) {
+        if (node.has("name")) {
+            data.title = node.get("name").asText();
+        }
         if (node.has("description")) {
             data.description = node.get("description").asText();
         }
