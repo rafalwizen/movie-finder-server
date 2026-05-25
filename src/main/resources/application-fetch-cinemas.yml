@@ -1,15 +1,3 @@
-providers:
-  cinema-city:
-    cinemas:
-      url: https://www.cinema-city.pl/pl/data-api-service/v1/quickbook/10103/cinemas/with-event/until/2027-01-31?attr=&lang=pl_PL
-      enabled: true
-  multikino:
-    cinemas:
-      url: https://www.multikino.pl/api/microservice/showings/cinemas
-      enabled: true
-  helios:
-    cinemas:
-      url: https://helios.pl/
-      enabled: true
-      fetch-details: true
-      rate-limit-ms: 1000
+# Profile: fetch-cinemas
+# Activates CinemaFetchRunner for one-shot cinema import.
+# Provider config is in application.properties.
