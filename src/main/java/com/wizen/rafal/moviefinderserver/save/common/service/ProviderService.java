@@ -1,6 +1,7 @@
 package com.wizen.rafal.moviefinderserver.save.common.service;
 
 import com.wizen.rafal.moviefinderserver.domain.model.CinemaProvider;
+import com.wizen.rafal.moviefinderserver.domain.model.Movie;
 import com.wizen.rafal.moviefinderserver.domain.repository.CinemaProviderRepository;
 import com.wizen.rafal.moviefinderserver.domain.repository.MovieRepository;
 import com.wizen.rafal.moviefinderserver.domain.repository.MovieSourceRepository;
@@ -18,6 +19,7 @@ public class ProviderService {
     private final CinemaProviderRepository cinemaProviderRepository;
     private final MovieRepository movieRepository;
     private final MovieSourceRepository movieSourceRepository;
+    private final MovieMatchingService movieMatchingService;
 
     public CinemaProvider getOrCreateProvider(String code, String name) {
         Optional<CinemaProvider> existing = cinemaProviderRepository.findByCode(code);
@@ -50,5 +52,37 @@ public class ProviderService {
 
     public Long nextMovieSourceId() {
         return movieSourceRepository.findMaxId() + 1;
+    }
+
+    /**
+     * Finds an existing Movie matching the imported film data, or creates a new one.
+     * If a match is found, the existing Movie is enriched with any missing fields.
+     */
+    public Movie resolveMovie(String title, String originalTitle, String posterUrl,
+                              Integer durationMinutes, String description, Integer year) {
+        Optional<Movie> match = movieMatchingService.findMatchingMovie(title, originalTitle, year);
+
+        if (match.isPresent()) {
+            Movie existing = match.get();
+            log.info("Reusing existing Movie '{}' (ID: {}) for imported title '{}'",
+                    existing.getTitle(), existing.getId(), title);
+            return movieMatchingService.enrichMovie(existing, title, originalTitle,
+                    posterUrl, durationMinutes, description, year);
+        }
+
+        // No match found — create new Movie
+        Long newId = nextMovieId();
+        Movie movie = Movie.builder()
+                .id(newId)
+                .title(title)
+                .originalTitle(originalTitle)
+                .posterUrl(posterUrl)
+                .durationMinutes(durationMinutes)
+                .description(description)
+                .year(year)
+                .build();
+        movieRepository.save(movie);
+        log.info("Created new Movie '{}' (ID: {})", title, newId);
+        return movie;
     }
 }
