@@ -83,17 +83,13 @@ public class MultikinoFilmImporter implements FilmImporter {
                         continue;
                     }
 
-                    Long newMovieId = providerService.nextMovieId();
-                    Movie movie = Movie.builder()
-                            .id(newMovieId)
-                            .title(filmDto.getFilmTitle())
-                            .originalTitle(nullIfEmpty(filmDto.getOriginalTitle()))
-                            .posterUrl(filmDto.getPosterImageSrc())
-                            .durationMinutes(filmDto.getRunningTime())
-                            .description(filmDto.getSynopsisShort())
-                            .year(extractYear(filmDto.getReleaseDate()))
-                            .build();
-                    movieRepository.save(movie);
+                    Movie movie = providerService.resolveMovie(
+                            filmDto.getFilmTitle(),
+                            nullIfEmpty(filmDto.getOriginalTitle()),
+                            filmDto.getPosterImageSrc(),
+                            filmDto.getRunningTime(),
+                            filmDto.getSynopsisShort(),
+                            extractYear(filmDto.getReleaseDate()));
 
                     Long newSourceId = providerService.nextMovieSourceId();
                     MovieSource movieSource = MovieSource.builder()

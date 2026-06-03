@@ -99,13 +99,8 @@ public class CinemaCityFilmImporter implements FilmImporter {
 
                         String posterUrl = fetchPosterUrl(filmDto.getFilmId());
 
-                        Long newMovieId = providerService.nextMovieId();
-                        Movie movie = Movie.builder()
-                                .id(newMovieId)
-                                .title(filmDto.getFilmName())
-                                .posterUrl(posterUrl)
-                                .build();
-                        movieRepository.save(movie);
+                        Movie movie = providerService.resolveMovie(
+                                filmDto.getFilmName(), null, posterUrl, null, null, null);
 
                         Long newSourceId = providerService.nextMovieSourceId();
                         MovieSource movieSource = MovieSource.builder()

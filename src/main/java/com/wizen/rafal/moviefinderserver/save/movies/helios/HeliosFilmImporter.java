@@ -101,17 +101,13 @@ public class HeliosFilmImporter implements FilmImporter {
                                 enrichFilmDetails(filmData, cinema.getExternalCinemaId(), parsed.filmPath);
                             }
 
-                            Long newMovieId = providerService.nextMovieId();
-                            Movie movie = Movie.builder()
-                                    .id(newMovieId)
-                                    .title(filmData.title)
-                                    .originalTitle(filmData.originalTitle)
-                                    .posterUrl(filmData.posterUrl)
-                                    .durationMinutes(filmData.durationMinutes)
-                                    .description(filmData.description)
-                                    .year(filmData.year)
-                                    .build();
-                            movieRepository.save(movie);
+                            Movie movie = providerService.resolveMovie(
+                                    filmData.title,
+                                    filmData.originalTitle,
+                                    filmData.posterUrl,
+                                    filmData.durationMinutes,
+                                    filmData.description,
+                                    filmData.year);
 
                             Long newSourceId = providerService.nextMovieSourceId();
                             MovieSource movieSource = MovieSource.builder()
