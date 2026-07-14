@@ -1,0 +1,13 @@
+target/
+.git/
+.idea/
+.vscode/
+.claude/
+docs/
+curl/
+error_file/
+db/*.db
+*.iml
+HELP.md
+README.md
+API.md
