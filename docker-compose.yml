@@ -2,7 +2,9 @@ services:
   backend:
     build: .
     ports:
-      - "8080:8080"
+      # Bind to localhost only: import endpoints stay reachable from the VPS
+      # for maintenance, but the raw backend is never exposed to the internet.
+      - "127.0.0.1:8080:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/db/cinema.db
       - IMPORT_SCHEDULED_ENABLED=true
@@ -10,3 +12,14 @@ services:
       - ./db:/app/db:rw
     restart: unless-stopped
     mem_limit: 1g
+
+  # Public reverse proxy: exposes only data endpoints on port 80.
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - backend
+    restart: unless-stopped

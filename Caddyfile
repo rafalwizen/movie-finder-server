@@ -1,0 +1,13 @@
+# Caddy reverse proxy: exposes only data endpoints to the internet.
+# Import endpoints (/api/import/*) are blocked with 403.
+# The backend's port 8080 is bound to localhost only, so the raw backend
+# is never reachable from outside the VPS (only via this proxy on port 80).
+
+:80 {
+	# Block all data-import endpoints - internal use only
+	@import path /api/import/*
+	respond @import 403
+
+	# Everything else (data/search endpoints) is forwarded to the backend
+	reverse_proxy backend:8080
+}
