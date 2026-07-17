@@ -40,3 +40,9 @@ db/cinema.db
 
 ### Logs ###
 logs/
+
+### Local notes / scratch files (not for the repo) ###
+/wdrozenie.txt
+/error_file
+/mikrus_instrukcja.txt
+/curl
