@@ -37,3 +37,6 @@ docs/
 
 ### Database ###
 db/cinema.db
+
+### Logs ###
+logs/
