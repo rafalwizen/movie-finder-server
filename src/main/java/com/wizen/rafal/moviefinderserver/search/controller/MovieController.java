@@ -4,6 +4,7 @@ import com.wizen.rafal.moviefinderserver.search.dto.MovieDTO;
 import com.wizen.rafal.moviefinderserver.domain.model.Movie;
 import com.wizen.rafal.moviefinderserver.domain.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +27,7 @@ public class MovieController {
 		}
 
 		return movies.stream()
-				.map(m -> new MovieDTO(m.getId(), m.getTitle(), m.getYear(), m.getPosterUrl()))
+				.map(MovieDTO::from)
 				.collect(Collectors.toList());
 	}
 
@@ -34,7 +35,14 @@ public class MovieController {
 	public List<MovieDTO> getAllMovies() {
 		List<Movie> movies = movieRepository.findAll();
 		return movies.stream()
-				.map(m -> new MovieDTO(m.getId(), m.getTitle(), m.getYear(), m.getPosterUrl()))
+				.map(MovieDTO::from)
 				.collect(Collectors.toList());
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<MovieDTO> getMovieById(@PathVariable Long id) {
+		return movieRepository.findById(id)
+				.map(m -> ResponseEntity.ok(MovieDTO.from(m)))
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 }

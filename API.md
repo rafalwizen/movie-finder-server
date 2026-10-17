@@ -45,13 +45,19 @@ GET /api/movies?q=spider
   {
     "id": 1,
     "title": "Avengers: Endgame",
+    "originalTitle": null,
     "year": 2019,
+    "durationMinutes": 181,
+    "description": "Po stracie Tanosa...",
     "posterUrl": "https://example.com/poster1.jpg"
   },
   {
     "id": 2,
     "title": "Spider-Man: No Way Home",
+    "originalTitle": null,
     "year": 2021,
+    "durationMinutes": 148,
+    "description": "Peter Parker zostaje...",
     "posterUrl": "https://example.com/poster2.jpg"
   }
 ]
@@ -148,11 +154,47 @@ GET /api/movies/allMovies
 
 ---
 
+### 4. Movie by ID
+
+**Endpoint:** `GET /api/movies/{id}`
+
+**Description:** Returns a single movie by its database ID, regardless of whether it has screenings.
+
+**Path Parameters:**
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id` | **yes** | number (Long) | Movie ID |
+
+**Example Request:**
+```
+GET /api/movies/1
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "title": "Avengers: Endgame",
+  "originalTitle": null,
+  "year": 2019,
+  "durationMinutes": 181,
+  "description": "Po stracie Tanosa...",
+  "posterUrl": "https://example.com/poster1.jpg"
+}
+```
+
+**Error Responses:**
+| Status | When |
+|--------|------|
+| `404 Not Found` | Movie with the given ID does not exist |
+
+---
+
 ## Import Endpoints
 
 All import endpoints are asynchronous — they return `202 Accepted` immediately and the import runs in the background.
 
-### 4. Import Cinemas
+### 5. Import Cinemas
 
 **Endpoint:** `POST /api/import/cinemas`
 
@@ -163,7 +205,7 @@ All import endpoints are asynchronous — they return `202 Accepted` immediately
 }
 ```
 
-### 5. Import Films
+### 6. Import Films
 
 **Endpoint:** `POST /api/import/films`
 
@@ -174,7 +216,7 @@ All import endpoints are asynchronous — they return `202 Accepted` immediately
 }
 ```
 
-### 6. Import Screenings
+### 7. Import Screenings
 
 **Endpoint:** `POST /api/import/screenings`
 
@@ -185,7 +227,7 @@ All import endpoints are asynchronous — they return `202 Accepted` immediately
 }
 ```
 
-### 7. Import All (Cinemas + Films + Screenings)
+### 8. Import All (Cinemas + Films + Screenings)
 
 **Endpoint:** `POST /api/import/all`
 
@@ -205,7 +247,10 @@ All import endpoints are asynchronous — they return `202 Accepted` immediately
 {
   "id": "Long — unique movie identifier",
   "title": "string — movie title",
+  "originalTitle": "string | null — original (usually English) title, may be missing",
   "year": "Integer | null — release year, may be missing",
+  "durationMinutes": "Integer | null — runtime in minutes, may be missing",
+  "description": "string | null — Polish synopsis from the provider, may be missing",
   "posterUrl": "string | null — URL to poster image, may be missing"
 }
 ```
@@ -231,7 +276,10 @@ The API does not enforce NOT NULL constraints on most fields. Frontend should de
 **Fields that can be `null`:**
 | DTO | Field | Notes |
 |-----|-------|-------|
+| MovieDTO | `originalTitle` | Not all providers supply the original title |
 | MovieDTO | `year` | Import may not always have year data |
+| MovieDTO | `durationMinutes` | Not all providers supply the runtime |
+| MovieDTO | `description` | Not all providers supply a synopsis |
 | MovieDTO | `posterUrl` | Not all movies have poster URLs |
 | ScreeningDTO | `cinemaCity` | Cinema may lack city data |
 | ScreeningDTO | `cinemaAddress` | Cinema may lack address data |
@@ -286,6 +334,9 @@ curl -X GET "http://localhost:8080/api/movies?q=batman"
 
 # Get all movies (including without screenings)
 curl -X GET "http://localhost:8080/api/movies/allMovies"
+
+# Get a single movie by ID
+curl -X GET "http://localhost:8080/api/movies/1"
 
 # Get future screenings for a movie
 curl -X GET "http://localhost:8080/api/screenings/by-movie?movieId=1"
