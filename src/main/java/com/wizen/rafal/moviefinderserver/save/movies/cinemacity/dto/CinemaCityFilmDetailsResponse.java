@@ -32,5 +32,14 @@ public class CinemaCityFilmDetailsResponse {
 
         @JsonProperty("posterLink")
         private String posterLink;
+
+        @JsonProperty("posterLinkLarge")
+        private String posterLinkLarge;
+
+        @JsonProperty("synopsis")
+        private String synopsis;
+
+        @JsonProperty("releaseYear")
+        private String releaseYear;
     }
 }

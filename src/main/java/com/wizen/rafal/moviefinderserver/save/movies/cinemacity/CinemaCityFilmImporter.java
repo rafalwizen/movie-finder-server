@@ -78,15 +78,15 @@ public class CinemaCityFilmImporter implements FilmImporter {
                             if (existingMovie.isPresent()) {
                                 Movie movie = existingMovie.get();
 
-                                if (movie.getPosterUrl() == null || movie.getPosterUrl().isEmpty()) {
-                                    log.debug("Film {} (ID: {}) has no poster, fetching...",
+                                if (needsDetailsBackfill(movie)) {
+                                    log.debug("Film {} (ID: {}) has missing details, fetching...",
                                             movie.getTitle(), movie.getId());
 
-                                    String posterUrl = fetchPosterUrl(filmDto.getFilmId());
-                                    if (posterUrl != null) {
-                                        movie.setPosterUrl(posterUrl);
+                                    CinemaCityFilmDetailsResponse.FilmDetails details =
+                                            fetchFilmDetails(filmDto.getFilmId());
+                                    if (applyDetails(movie, details)) {
                                         movieRepository.save(movie);
-                                        log.info("Updated poster for film: {} (ID: {})",
+                                        log.info("Updated details for film: {} (ID: {})",
                                                 movie.getTitle(), movie.getId());
                                         totalUpdated++;
                                     }
@@ -97,10 +97,15 @@ public class CinemaCityFilmImporter implements FilmImporter {
                             continue;
                         }
 
-                        String posterUrl = fetchPosterUrl(filmDto.getFilmId());
+                        CinemaCityFilmDetailsResponse.FilmDetails details = fetchFilmDetails(filmDto.getFilmId());
 
                         Movie movie = providerService.resolveMovie(
-                                filmDto.getFilmName(), null, posterUrl, null, null, null);
+                                filmDto.getFilmName(),
+                                details != null ? details.getOriginalName() : null,
+                                details != null ? pickPosterUrl(details) : null,
+                                details != null ? details.getLength() : null,
+                                details != null ? details.getSynopsis() : null,
+                                details != null ? parseYear(details.getReleaseYear()) : null);
 
                         Long newSourceId = providerService.nextMovieSourceId();
                         MovieSource movieSource = MovieSource.builder()
@@ -124,11 +129,74 @@ public class CinemaCityFilmImporter implements FilmImporter {
             }
         }
 
-        log.info("Cinema City film download completed. Processed: {}, Added: {}, Skipped: {}, Updated posters: {}",
+        log.info("Cinema City film download completed. Processed: {}, Added: {}, Skipped: {}, Updated details: {}",
                 totalProcessed, totalAdded, totalSkipped, totalUpdated);
     }
 
-    private String fetchPosterUrl(String externalMovieId) {
+    /**
+     * Whether the existing movie is missing any field the Cinema City details endpoint can provide.
+     */
+    private boolean needsDetailsBackfill(Movie movie) {
+        return movie.getPosterUrl() == null || movie.getPosterUrl().isEmpty()
+                || movie.getDescription() == null || movie.getDescription().isEmpty()
+                || movie.getDurationMinutes() == null
+                || movie.getYear() == null;
+    }
+
+    /**
+     * Fills only the blank fields of the movie from the fetched details.
+     *
+     * @return true when at least one field was set (movie should be saved)
+     */
+    private boolean applyDetails(Movie movie, CinemaCityFilmDetailsResponse.FilmDetails details) {
+        if (details == null) {
+            return false;
+        }
+
+        boolean changed = false;
+
+        if ((movie.getPosterUrl() == null || movie.getPosterUrl().isEmpty())
+                && pickPosterUrl(details) != null) {
+            movie.setPosterUrl(pickPosterUrl(details));
+            changed = true;
+        }
+        if ((movie.getDescription() == null || movie.getDescription().isEmpty())
+                && details.getSynopsis() != null && !details.getSynopsis().isEmpty()) {
+            movie.setDescription(details.getSynopsis());
+            changed = true;
+        }
+        if (movie.getDurationMinutes() == null && details.getLength() != null) {
+            movie.setDurationMinutes(details.getLength());
+            changed = true;
+        }
+        if (movie.getYear() == null && parseYear(details.getReleaseYear()) != null) {
+            movie.setYear(parseYear(details.getReleaseYear()));
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    private String pickPosterUrl(CinemaCityFilmDetailsResponse.FilmDetails details) {
+        if (details.getPosterLinkLarge() != null && !details.getPosterLinkLarge().isEmpty()) {
+            return details.getPosterLinkLarge();
+        }
+        return details.getPosterLink();
+    }
+
+    private Integer parseYear(String releaseYear) {
+        if (releaseYear == null || releaseYear.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(releaseYear.trim());
+        } catch (NumberFormatException e) {
+            log.warn("Could not parse release year: {}", releaseYear);
+            return null;
+        }
+    }
+
+    private CinemaCityFilmDetailsResponse.FilmDetails fetchFilmDetails(String externalMovieId) {
         try {
             String url = config.getFilmDetailsUrl() + "/" + externalMovieId;
             log.debug("Fetching film details from URL: {}", url);
@@ -137,15 +205,10 @@ public class CinemaCityFilmImporter implements FilmImporter {
 
             if (response != null && response.getBody() != null
                     && response.getBody().getFilmDetails() != null) {
-                String posterLink = response.getBody().getFilmDetails().getPosterLink();
-
-                if (posterLink != null && !posterLink.isEmpty()) {
-                    log.debug("Found poster for film {}: {}", externalMovieId, posterLink);
-                    return posterLink;
-                }
+                return response.getBody().getFilmDetails();
             }
         } catch (Exception e) {
-            log.error("Error fetching poster for film {}: {}", externalMovieId, e.getMessage());
+            log.error("Error fetching film details for film {}: {}", externalMovieId, e.getMessage());
         }
 
         return null;
