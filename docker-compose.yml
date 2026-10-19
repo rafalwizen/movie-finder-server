@@ -8,6 +8,13 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/db/cinema.db
       - IMPORT_SCHEDULED_ENABLED=true
+      # Daily GSC -> Telegram report. Fill in REAL values on the VPS and
+      # uncomment (never commit secrets). GSC_REPORT_CREDENTIALS_JSON must be
+      # the service-account key minified to a single line: jq -c . gsc-key.json
+      # - GSC_REPORT_ENABLED=true
+      # - 'GSC_REPORT_CREDENTIALS_JSON={"type":"service_account",...}'
+      # - TELEGRAM_BOT_TOKEN=123456789:AA...
+      # - TELEGRAM_CHAT_ID=123456789
     volumes:
       - ./db:/app/db:rw
       - ./logs:/app/logs:rw
