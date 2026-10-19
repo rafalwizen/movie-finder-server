@@ -99,6 +99,31 @@ In Docker, this is enabled by default via `IMPORT_SCHEDULED_ENABLED=true`.
 
 Each profile triggers a one-shot import that persists data to SQLite.
 
+## GSC Daily Report (Telegram)
+
+Optional daily Google Search Console → Telegram report (`gsc/` package). Sends
+clicks/impressions/CTR/position for the last 7 days (vs. the previous 7),
+top queries/pages and the indexing status of monitored URLs to a Telegram chat.
+
+```properties
+gsc.report.enabled=true                      # enable the daily schedule
+gsc.report.cron=0 0 8 * * *                  # default: 8:00 Europe/Warsaw
+gsc.report.site-url=https://gdzie-do-kina.pl/
+gsc.report.monitored-urls=https://gdzie-do-kina.pl/   # comma-separated list
+gsc.report.credentials-json=...              # service-account key (single-line JSON) OR:
+gsc.report.credentials-file=...              # path to the key file (exactly one of the two)
+telegram.bot-token=...
+telegram.chat-id=...
+```
+
+One-shot manual run (no schedule needed):
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=gsc-report
+```
+
+Setup guide (service account + BotFather) lives in `wdrozenie.txt`.
+
 ## Project Structure
 
 ```
@@ -110,6 +135,7 @@ src/main/java/.../moviefinderserver/
 │   ├── cinemas/        # Cinema location importers
 │   ├── movies/         # Film metadata importers
 │   └── screenings/     # Screening showtime importers
+├── gsc/                # Daily GSC -> Telegram report
 └── search/
     ├── controller/     # REST controllers
     └── dto/            # Response DTOs

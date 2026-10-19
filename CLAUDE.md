@@ -52,6 +52,7 @@ Two operational modes:
 - `save/cinemas/` — cinema data ingestion from Cinema City
 - `save/movies/` — film data ingestion from Cinema City
 - `save/screenings/` — screening data ingestion from Cinema City
+- `gsc/` — daily Google Search Console → Telegram report (scheduler/service/runner)
 - `search/controller/` — REST controllers (`MovieController`, `ScreeningController`)
 - `search/dto/` — response DTOs
 
