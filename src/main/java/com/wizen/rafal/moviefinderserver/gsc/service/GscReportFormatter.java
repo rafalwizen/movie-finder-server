@@ -145,10 +145,15 @@ public class GscReportFormatter {
 
 	private String host(String siteUrl) {
 		try {
-			return java.net.URI.create(siteUrl).getHost();
+			String host = java.net.URI.create(siteUrl).getHost();
+			if (host != null) {
+				return host;
+			}
 		} catch (RuntimeException e) {
-			return siteUrl;
+			// fall through to the raw value below
 		}
+		// sc-domain: properties are opaque URIs without a host component
+		return siteUrl.replaceFirst("^sc-domain:", "");
 	}
 
 	private String displayPath(String url) {

@@ -47,4 +47,18 @@ class GscReportFormatterTest {
 		assertThat(html).contains("bez zmian");
 		assertThat(html).contains("błąd: boom");
 	}
+
+	@Test
+	void rendersScDomainSiteUrlHeaderWithoutHost() {
+		GscReportData data = new GscReportData(
+				new GscReportData.WindowTotals(LocalDate.of(2026, 10, 10), LocalDate.of(2026, 10, 16), 0, 0, 0, 0),
+				new GscReportData.WindowTotals(LocalDate.of(2026, 10, 3), LocalDate.of(2026, 10, 9), 0, 0, 0, 0),
+				List.of(), List.of(), List.of());
+
+		// sc-domain: is an opaque URI — URI.getHost() returns null, which used
+		// to NPE in the header before the fallback was added.
+		String html = formatter.format(data, "sc-domain:gdzie-do-kina.pl");
+
+		assertThat(html).contains("Raport GSC — gdzie-do-kina.pl");
+	}
 }
