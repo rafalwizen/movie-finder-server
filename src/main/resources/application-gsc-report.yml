@@ -1,3 +1,7 @@
 # Profile: gsc-report
 # Activates GscReportRunner for a one-shot GSC -> Telegram report.
 # Configuration lives in application.properties (gsc.report.*, telegram.*).
+spring:
+  main:
+    # One-shot job: no web server, exit cleanly after the runner finishes.
+    web-application-type: none
