@@ -1,5 +1,6 @@
 package com.wizen.rafal.moviefinderserver.gsc.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDate;
@@ -13,7 +14,12 @@ import java.util.List;
  * @param type       "web" (the current field name; "searchType" is deprecated)
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record SearchAnalyticsRequest(LocalDate startDate, LocalDate endDate, List<String> dimensions, Integer rowLimit, String type) {
+public record SearchAnalyticsRequest(
+		// The RestTemplate's default ObjectMapper serializes java.time as
+		// arrays ([2026,10,28]); the API needs plain "yyyy-MM-dd" strings.
+		@JsonFormat(shape = JsonFormat.Shape.STRING) LocalDate startDate,
+		@JsonFormat(shape = JsonFormat.Shape.STRING) LocalDate endDate,
+		List<String> dimensions, Integer rowLimit, String type) {
 
 	public static SearchAnalyticsRequest totals(LocalDate startDate, LocalDate endDate) {
 		return new SearchAnalyticsRequest(startDate, endDate, null, null, "web");
